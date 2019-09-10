@@ -350,3 +350,6 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+.vs/MultiClientChatApp/v16/Server/sqlite3/storage.ide-shm
+.vs/MultiClientChatApp/v16/Server/sqlite3/storage.ide
+.vs/MultiClientChatApp/v16/Server/sqlite3/storage.ide-wal
