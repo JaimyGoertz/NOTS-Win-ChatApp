@@ -29,118 +29,118 @@
 
         private void InitializeComponent()
         {
-            this.listBox1 = new System.Windows.Forms.ListBox();
-            this.button2 = new System.Windows.Forms.Button();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.button3 = new System.Windows.Forms.Button();
-            this.textBox2 = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.button1 = new System.Windows.Forms.Button();
-            this.groupBox1.SuspendLayout();
+            this.Chatscreen = new System.Windows.Forms.ListBox();
+            this.ListenButton = new System.Windows.Forms.Button();
+            this.ConnectToServerBox = new System.Windows.Forms.GroupBox();
+            this.ConnectButton = new System.Windows.Forms.Button();
+            this.IpInputBox = new System.Windows.Forms.TextBox();
+            this.IpLabel = new System.Windows.Forms.Label();
+            this.MessageInput = new System.Windows.Forms.TextBox();
+            this.SendMessageButton = new System.Windows.Forms.Button();
+            this.ConnectToServerBox.SuspendLayout();
             this.SuspendLayout();
             // 
-            // listBox1
+            // Chatscreen
             // 
-            this.listBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.Chatscreen.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.listBox1.FormattingEnabled = true;
-            this.listBox1.ItemHeight = 16;
-            this.listBox1.Location = new System.Drawing.Point(6, 10);
-            this.listBox1.Name = "listBox1";
-            this.listBox1.Size = new System.Drawing.Size(540, 372);
-            this.listBox1.TabIndex = 0;
+            this.Chatscreen.FormattingEnabled = true;
+            this.Chatscreen.ItemHeight = 16;
+            this.Chatscreen.Location = new System.Drawing.Point(6, 10);
+            this.Chatscreen.Name = "Chatscreen";
+            this.Chatscreen.Size = new System.Drawing.Size(540, 372);
+            this.Chatscreen.TabIndex = 0;
             // 
-            // button2
+            // ListenButton
             // 
-            this.button2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button2.Location = new System.Drawing.Point(564, 12);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(200, 58);
-            this.button2.TabIndex = 3;
-            this.button2.Text = "Listen";
-            this.button2.UseVisualStyleBackColor = true;
+            this.ListenButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.ListenButton.Location = new System.Drawing.Point(564, 12);
+            this.ListenButton.Name = "ListenButton";
+            this.ListenButton.Size = new System.Drawing.Size(200, 58);
+            this.ListenButton.TabIndex = 3;
+            this.ListenButton.Text = "Listen";
+            this.ListenButton.UseVisualStyleBackColor = true;
             // 
-            // groupBox1
+            // ConnectToServerBox
             // 
-            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox1.Controls.Add(this.button3);
-            this.groupBox1.Controls.Add(this.textBox2);
-            this.groupBox1.Controls.Add(this.label1);
-            this.groupBox1.Location = new System.Drawing.Point(564, 103);
-            this.groupBox1.MinimumSize = new System.Drawing.Size(110, 0);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(206, 130);
-            this.groupBox1.TabIndex = 4;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Connect to Server";
+            this.ConnectToServerBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.ConnectToServerBox.Controls.Add(this.ConnectButton);
+            this.ConnectToServerBox.Controls.Add(this.IpInputBox);
+            this.ConnectToServerBox.Controls.Add(this.IpLabel);
+            this.ConnectToServerBox.Location = new System.Drawing.Point(564, 103);
+            this.ConnectToServerBox.MinimumSize = new System.Drawing.Size(110, 0);
+            this.ConnectToServerBox.Name = "ConnectToServerBox";
+            this.ConnectToServerBox.Size = new System.Drawing.Size(206, 130);
+            this.ConnectToServerBox.TabIndex = 4;
+            this.ConnectToServerBox.TabStop = false;
+            this.ConnectToServerBox.Text = "Connect to Server";
             // 
-            // button3
+            // ConnectButton
             // 
-            this.button3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button3.Location = new System.Drawing.Point(6, 86);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(191, 23);
-            this.button3.TabIndex = 2;
-            this.button3.Text = "Connect";
-            this.button3.UseVisualStyleBackColor = true;
+            this.ConnectButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.ConnectButton.Location = new System.Drawing.Point(6, 86);
+            this.ConnectButton.Name = "ConnectButton";
+            this.ConnectButton.Size = new System.Drawing.Size(191, 23);
+            this.ConnectButton.TabIndex = 2;
+            this.ConnectButton.Text = "Connect";
+            this.ConnectButton.UseVisualStyleBackColor = true;
             // 
-            // textBox2
+            // IpInputBox
             // 
-            this.textBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBox2.Location = new System.Drawing.Point(6, 49);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(191, 22);
-            this.textBox2.TabIndex = 1;
+            this.IpInputBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.IpInputBox.Location = new System.Drawing.Point(6, 49);
+            this.IpInputBox.Name = "IpInputBox";
+            this.IpInputBox.Size = new System.Drawing.Size(191, 22);
+            this.IpInputBox.TabIndex = 1;
             // 
-            // label1
+            // IpLabel
             // 
-            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(6, 29);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(97, 17);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "Chatserver IP:";
+            this.IpLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.IpLabel.AutoSize = true;
+            this.IpLabel.Location = new System.Drawing.Point(6, 29);
+            this.IpLabel.Name = "IpLabel";
+            this.IpLabel.Size = new System.Drawing.Size(97, 17);
+            this.IpLabel.TabIndex = 0;
+            this.IpLabel.Text = "Chatserver IP:";
             // 
-            // textBox1
+            // MessageInput
             // 
-            this.textBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            this.MessageInput.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBox1.Location = new System.Drawing.Point(6, 398);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(459, 22);
-            this.textBox1.TabIndex = 5;
+            this.MessageInput.Location = new System.Drawing.Point(6, 398);
+            this.MessageInput.Name = "MessageInput";
+            this.MessageInput.Size = new System.Drawing.Size(459, 22);
+            this.MessageInput.TabIndex = 5;
             // 
-            // button1
+            // SendMessageButton
             // 
-            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.button1.CausesValidation = false;
-            this.button1.Location = new System.Drawing.Point(471, 397);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 6;
-            this.button1.Text = "Send";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.Button1_Click_1);
+            this.SendMessageButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.SendMessageButton.CausesValidation = false;
+            this.SendMessageButton.Location = new System.Drawing.Point(471, 397);
+            this.SendMessageButton.Name = "SendMessageButton";
+            this.SendMessageButton.Size = new System.Drawing.Size(75, 23);
+            this.SendMessageButton.TabIndex = 6;
+            this.SendMessageButton.Text = "Send";
+            this.SendMessageButton.UseVisualStyleBackColor = true;
+            this.SendMessageButton.Click += new System.EventHandler(this.Button1_Click_1);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(782, 442);
-            this.Controls.Add(this.button1);
-            this.Controls.Add(this.textBox1);
-            this.Controls.Add(this.groupBox1);
-            this.Controls.Add(this.button2);
-            this.Controls.Add(this.listBox1);
+            this.Controls.Add(this.SendMessageButton);
+            this.Controls.Add(this.MessageInput);
+            this.Controls.Add(this.ConnectToServerBox);
+            this.Controls.Add(this.ListenButton);
+            this.Controls.Add(this.Chatscreen);
             this.MinimumSize = new System.Drawing.Size(570, 280);
             this.Name = "MainForm";
             this.Text = "NOTS chat app";
             this.Load += new System.EventHandler(this.Form1_Load);
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
+            this.ConnectToServerBox.ResumeLayout(false);
+            this.ConnectToServerBox.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -149,14 +149,14 @@
         #endregion
 
         private System.Windows.Forms.SplitContainer splitContainer1;
-        private System.Windows.Forms.ListBox listBox1;
-        private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Button button3;
-        private System.Windows.Forms.TextBox textBox2;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.ListBox Chatscreen;
+        private System.Windows.Forms.Button ListenButton;
+        private System.Windows.Forms.GroupBox ConnectToServerBox;
+        private System.Windows.Forms.Label IpLabel;
+        private System.Windows.Forms.Button ConnectButton;
+        private System.Windows.Forms.TextBox IpInputBox;
+        private System.Windows.Forms.TextBox MessageInput;
+        private System.Windows.Forms.Button SendMessageButton;
     }
 }
 
