@@ -22,6 +22,11 @@ namespace MultiClientChatApp
 
         protected delegate void UpdateDisplayDelegate(string message);
 
+        public MainForm()
+        {
+            InitializeComponent();
+        }
+
         private void AddMessage(string message)
         {
             if (Chatscreen.InvokeRequired)
@@ -39,7 +44,7 @@ namespace MultiClientChatApp
             Chatscreen.Items.Add(message);
         }
 
-        private void btnListen_Click(object sender, EventArgs e)
+        private void ListenButton_Click(object sender, EventArgs e)
         {
             TcpListener tcpListener = new TcpListener(IPAddress.Any, 9000);
             tcpListener.Start();
@@ -61,7 +66,7 @@ namespace MultiClientChatApp
             networkStream = tcpClient.GetStream();
             AddMessage("Connected!");
 
-            while (true)
+             while (true)
             {
                 int readBytes = networkStream.Read(buffer, 0, bufferSize);
                 message = Encoding.ASCII.GetString(buffer, 0, readBytes);
@@ -81,16 +86,15 @@ namespace MultiClientChatApp
             AddMessage("Connection closed");
         }
 
-        private void btnConnectWithServer_Click(object sender, EventArgs e)
+        private void ConnectButton_Click(object sender, EventArgs e)
         {
             AddMessage("Connecting...");
-
             tcpClient = new TcpClient(IpInputBox.Text, 9000);
             thread = new Thread(new ThreadStart(ReceiveData));
             thread.Start();
         }
 
-        private void btnSendMessage_Click(object sender, EventArgs e)
+        private void SendMessageButton_Click(object sender, EventArgs e)
         {
             string message = MessageInput.Text;
 
@@ -100,11 +104,6 @@ namespace MultiClientChatApp
             AddMessage(message);
             MessageInput.Clear();
             MessageInput.Focus();
-        }
-
-        public MainForm()
-        {
-            InitializeComponent();
         }
 
         private void Form1_Load(object sender, EventArgs e)

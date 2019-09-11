@@ -61,6 +61,7 @@
             this.ListenButton.TabIndex = 3;
             this.ListenButton.Text = "Listen";
             this.ListenButton.UseVisualStyleBackColor = true;
+            this.ListenButton.Click += new System.EventHandler(ListenButton_Click);
             // 
             // ConnectToServerBox
             // 
@@ -85,6 +86,7 @@
             this.ConnectButton.TabIndex = 2;
             this.ConnectButton.Text = "Connect";
             this.ConnectButton.UseVisualStyleBackColor = true;
+            this.ConnectButton.Click += new System.EventHandler(this.ConnectButton_Click);
             // 
             // IpInputBox
             // 
@@ -123,7 +125,7 @@
             this.SendMessageButton.TabIndex = 6;
             this.SendMessageButton.Text = "Send";
             this.SendMessageButton.UseVisualStyleBackColor = true;
-            this.SendMessageButton.Click += new System.EventHandler(this.Button1_Click_1);
+            this.SendMessageButton.Click += new System.EventHandler(this.SendMessageButton_Click);
             // 
             // MainForm
             // 
@@ -148,15 +150,14 @@
 
         #endregion
 
-        private System.Windows.Forms.SplitContainer splitContainer1;
-        private System.Windows.Forms.ListBox Chatscreen;
-        private System.Windows.Forms.Button ListenButton;
-        private System.Windows.Forms.GroupBox ConnectToServerBox;
-        private System.Windows.Forms.Label IpLabel;
-        private System.Windows.Forms.Button ConnectButton;
-        private System.Windows.Forms.TextBox IpInputBox;
-        private System.Windows.Forms.TextBox MessageInput;
-        private System.Windows.Forms.Button SendMessageButton;
+        public System.Windows.Forms.ListBox Chatscreen;
+        public System.Windows.Forms.Button ListenButton;
+        public System.Windows.Forms.GroupBox ConnectToServerBox;
+        public System.Windows.Forms.Label IpLabel;
+        public System.Windows.Forms.Button ConnectButton;
+        public System.Windows.Forms.TextBox IpInputBox;
+        public System.Windows.Forms.TextBox MessageInput;
+        public System.Windows.Forms.Button SendMessageButton;
     }
 }
 
