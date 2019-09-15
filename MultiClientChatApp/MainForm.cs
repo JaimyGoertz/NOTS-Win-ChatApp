@@ -19,16 +19,23 @@ namespace MultiClientChatApp
         TcpClient tcpClient;
         NetworkStream networkStream;
 
-        //protected delegate void UpdateDisplayDelegate(string message); //Alleen op de uit thread dingen aanpassen (weg)
+        protected delegate void UpdateDisplayDelegate(string message); //Alleen op de uit thread dingen aanpassen (weg)
 
         public MainForm()
         {
             InitializeComponent();
         }
 
-        private async void AddMessage(string message)
+        private void AddMessage(string message) 
         {
-               await Task.Run(() => UpdateDisplay(message));
+            if (Chatscreen.InvokeRequired)
+            {
+                Chatscreen.Invoke(new UpdateDisplayDelegate(UpdateDisplay), new object[] { message });
+            }
+            else
+            {
+                UpdateDisplay(message);
+            }
         }
 
         private void UpdateDisplay(string message)
@@ -36,33 +43,28 @@ namespace MultiClientChatApp
             Chatscreen.Items.Add(message);
         }
 
-        private async void ListenButton_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                await CreateServerAsync();
-            }
-            catch
-            {
-                MessageBox.Show("An error has occured");
-            }
-        }
-
         private async Task CreateServerAsync()
         {
-            int portNumber = PortCheck(PortInputBox.Text);
-            TcpListener tcpListener = new TcpListener(IPAddress.Any, portNumber);
-            tcpListener.Start();
-            AddMessage($"[Server] waiting for clients...");
-            tcpClient = await Task.Run(() => tcpListener.AcceptTcpClientAsync());
-            await Task.Run(() => ReceiveData());
+            int portNumber = ParseStringToInt(PortInputBox.Text);
+            if (portNumber != 0)
+            {
+                TcpListener tcpListener = new TcpListener(IPAddress.Any, portNumber);
+                tcpListener.Start();
+                MessageInput.Enabled = false;
+                SendMessageButton.Enabled = false;
+                CreateServerButton.Enabled = false;
+                ConnectButton.Enabled = false;
+                AddMessage($"Server is waiting for clients...");
+                tcpClient = await Task.Run(() => tcpListener.AcceptTcpClientAsync());
+                await Task.Run(() => ReceiveData());
+            }
         }
 
         private void ReceiveData()
         {
-            int bufferSize = 1024;
+            int bufferSize = ParseStringToInt(BufferInputBox.Text);
             string message = "";
-            byte[] buffer = new byte[bufferSize];//Dynamisch instelbaar vanaf de UI
+            byte[] buffer = new byte[bufferSize];
 
             networkStream = tcpClient.GetStream();
             AddMessage("Connected!");
@@ -73,8 +75,9 @@ namespace MultiClientChatApp
                 message = Encoding.ASCII.GetString(buffer, 0, readBytes);
                 //Exception handling and using
                 if (message == "bye")
+                {
                     break;
-
+                }
                 AddMessage(message);
             }
             buffer = Encoding.ASCII.GetBytes("bye");
@@ -101,11 +104,16 @@ namespace MultiClientChatApp
 
         private async Task CreateConnectionAsync()
         {
-            int portNumber = PortCheck(PortInputBox.Text);
-
+            int portNumber = ParseStringToInt(PortInputBox.Text);
+            Console.WriteLine(portNumber);
             if (portNumber != 0)
             {
+                AddMessage("Connecting");
+                Console.WriteLine(IpInputBox.Text);
                 tcpClient = await Task.Run(() => new TcpClient(IpInputBox.Text, portNumber));
+                ConnectButton.Enabled = false;
+                CreateServerButton.Enabled = false;
+                NameInputBox.Enabled = false;
                 await Task.Run(() => ReceiveData());
             }
             else
@@ -114,17 +122,17 @@ namespace MultiClientChatApp
             }
         }
 
-        private int PortCheck(string port)
+        private int ParseStringToInt(string stringParam)
         {
-            int portNumber;
-            int.TryParse(port, out portNumber);
+            int number;
+            int.TryParse(stringParam, out number);
 
-            return portNumber;
+            return number;
         }
 
         private void SendMessageButton_Click(object sender, EventArgs e)
         {
-            string message = MessageInput.Text;
+            string message = $"{NameInputBox.Text}:{MessageInput.Text}";
 
             byte[] buffer = Encoding.ASCII.GetBytes(message);
             networkStream.Write(buffer, 0, buffer.Length);
@@ -135,9 +143,20 @@ namespace MultiClientChatApp
         }
         //Zorg voor afsluiting tcpListener
 
-        private Boolean matchesRegex(String input, String regex)
-        {
-            return System.Text.RegularExpressions.Regex.IsMatch(input, regex);
+        //private Boolean matchesRegex(String input, String regex)
+        //{
+           // return System.Text.RegularExpressions.Regex.IsMatch(input, regex);
+        //}
+
+    private async void CreateServerButton_Click(object sender, EventArgs e){
+            try
+            {
+                await CreateServerAsync();
+            }
+            catch
+            {
+                MessageBox.Show("An error has occured");
+            }
         }
 
         private void Form1_Load(object sender, EventArgs e)

@@ -30,19 +30,19 @@
         private void InitializeComponent()
         {
             this.Chatscreen = new System.Windows.Forms.ListBox();
-            this.ListenButton = new System.Windows.Forms.Button();
             this.ConnectToServerBox = new System.Windows.Forms.GroupBox();
+            this.CreateServerButton = new System.Windows.Forms.Button();
+            this.BufferLabel = new System.Windows.Forms.Label();
+            this.BufferInputBox = new System.Windows.Forms.TextBox();
+            this.PortLabel = new System.Windows.Forms.Label();
+            this.PortInputBox = new System.Windows.Forms.TextBox();
+            this.NameLabel = new System.Windows.Forms.Label();
+            this.NameInputBox = new System.Windows.Forms.TextBox();
             this.ConnectButton = new System.Windows.Forms.Button();
             this.IpInputBox = new System.Windows.Forms.TextBox();
             this.IpLabel = new System.Windows.Forms.Label();
             this.MessageInput = new System.Windows.Forms.TextBox();
             this.SendMessageButton = new System.Windows.Forms.Button();
-            this.NameInputBox = new System.Windows.Forms.TextBox();
-            this.NameLabel = new System.Windows.Forms.Label();
-            this.PortInputBox = new System.Windows.Forms.TextBox();
-            this.PortLabel = new System.Windows.Forms.Label();
-            this.BufferInputBox = new System.Windows.Forms.TextBox();
-            this.BufferLabel = new System.Windows.Forms.Label();
             this.ConnectToServerBox.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -58,20 +58,10 @@
             this.Chatscreen.Size = new System.Drawing.Size(540, 372);
             this.Chatscreen.TabIndex = 0;
             // 
-            // ListenButton
-            // 
-            this.ListenButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.ListenButton.Location = new System.Drawing.Point(564, 12);
-            this.ListenButton.Name = "ListenButton";
-            this.ListenButton.Size = new System.Drawing.Size(200, 58);
-            this.ListenButton.TabIndex = 3;
-            this.ListenButton.Text = "Listen";
-            this.ListenButton.UseVisualStyleBackColor = true;
-            this.ListenButton.Click += new System.EventHandler(this.ListenButton_Click);
-            // 
             // ConnectToServerBox
             // 
             this.ConnectToServerBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.ConnectToServerBox.Controls.Add(this.CreateServerButton);
             this.ConnectToServerBox.Controls.Add(this.BufferLabel);
             this.ConnectToServerBox.Controls.Add(this.BufferInputBox);
             this.ConnectToServerBox.Controls.Add(this.PortLabel);
@@ -81,20 +71,78 @@
             this.ConnectToServerBox.Controls.Add(this.ConnectButton);
             this.ConnectToServerBox.Controls.Add(this.IpInputBox);
             this.ConnectToServerBox.Controls.Add(this.IpLabel);
-            this.ConnectToServerBox.Location = new System.Drawing.Point(564, 103);
+            this.ConnectToServerBox.Location = new System.Drawing.Point(564, 12);
             this.ConnectToServerBox.MinimumSize = new System.Drawing.Size(110, 0);
             this.ConnectToServerBox.Name = "ConnectToServerBox";
-            this.ConnectToServerBox.Size = new System.Drawing.Size(206, 307);
+            this.ConnectToServerBox.Size = new System.Drawing.Size(206, 418);
             this.ConnectToServerBox.TabIndex = 4;
             this.ConnectToServerBox.TabStop = false;
             this.ConnectToServerBox.Text = "Connect to Server";
+            // 
+            // CreateServerButton
+            // 
+            this.CreateServerButton.Location = new System.Drawing.Point(12, 314);
+            this.CreateServerButton.Name = "CreateServerButton";
+            this.CreateServerButton.Size = new System.Drawing.Size(188, 43);
+            this.CreateServerButton.TabIndex = 9;
+            this.CreateServerButton.Text = "Create Server";
+            this.CreateServerButton.UseVisualStyleBackColor = true;
+            this.CreateServerButton.Click += new System.EventHandler(this.CreateServerButton_Click);
+            // 
+            // BufferLabel
+            // 
+            this.BufferLabel.AutoSize = true;
+            this.BufferLabel.Location = new System.Drawing.Point(9, 200);
+            this.BufferLabel.Name = "BufferLabel";
+            this.BufferLabel.Size = new System.Drawing.Size(81, 17);
+            this.BufferLabel.TabIndex = 8;
+            this.BufferLabel.Text = "Buffer Size:";
+            // 
+            // BufferInputBox
+            // 
+            this.BufferInputBox.Location = new System.Drawing.Point(9, 223);
+            this.BufferInputBox.Name = "BufferInputBox";
+            this.BufferInputBox.Size = new System.Drawing.Size(185, 22);
+            this.BufferInputBox.TabIndex = 7;
+            // 
+            // PortLabel
+            // 
+            this.PortLabel.AutoSize = true;
+            this.PortLabel.Location = new System.Drawing.Point(6, 145);
+            this.PortLabel.Name = "PortLabel";
+            this.PortLabel.Size = new System.Drawing.Size(38, 17);
+            this.PortLabel.TabIndex = 6;
+            this.PortLabel.Text = "Port:";
+            // 
+            // PortInputBox
+            // 
+            this.PortInputBox.Location = new System.Drawing.Point(6, 165);
+            this.PortInputBox.Name = "PortInputBox";
+            this.PortInputBox.Size = new System.Drawing.Size(188, 22);
+            this.PortInputBox.TabIndex = 5;
+            // 
+            // NameLabel
+            // 
+            this.NameLabel.AutoSize = true;
+            this.NameLabel.Location = new System.Drawing.Point(6, 31);
+            this.NameLabel.Name = "NameLabel";
+            this.NameLabel.Size = new System.Drawing.Size(49, 17);
+            this.NameLabel.TabIndex = 4;
+            this.NameLabel.Text = "Name:";
+            // 
+            // NameInputBox
+            // 
+            this.NameInputBox.Location = new System.Drawing.Point(9, 51);
+            this.NameInputBox.Name = "NameInputBox";
+            this.NameInputBox.Size = new System.Drawing.Size(188, 22);
+            this.NameInputBox.TabIndex = 3;
             // 
             // ConnectButton
             // 
             this.ConnectButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.ConnectButton.Location = new System.Drawing.Point(9, 268);
             this.ConnectButton.Name = "ConnectButton";
-            this.ConnectButton.Size = new System.Drawing.Size(191, 23);
+            this.ConnectButton.Size = new System.Drawing.Size(191, 40);
             this.ConnectButton.TabIndex = 2;
             this.ConnectButton.Text = "Connect";
             this.ConnectButton.UseVisualStyleBackColor = true;
@@ -140,54 +188,6 @@
             this.SendMessageButton.UseVisualStyleBackColor = true;
             this.SendMessageButton.Click += new System.EventHandler(this.SendMessageButton_Click);
             // 
-            // NameInputBox
-            // 
-            this.NameInputBox.Location = new System.Drawing.Point(9, 51);
-            this.NameInputBox.Name = "NameInputBox";
-            this.NameInputBox.Size = new System.Drawing.Size(188, 22);
-            this.NameInputBox.TabIndex = 3;
-            // 
-            // NameLabel
-            // 
-            this.NameLabel.AutoSize = true;
-            this.NameLabel.Location = new System.Drawing.Point(6, 31);
-            this.NameLabel.Name = "NameLabel";
-            this.NameLabel.Size = new System.Drawing.Size(49, 17);
-            this.NameLabel.TabIndex = 4;
-            this.NameLabel.Text = "Name:";
-            // 
-            // PortInputBox
-            // 
-            this.PortInputBox.Location = new System.Drawing.Point(6, 165);
-            this.PortInputBox.Name = "PortInputBox";
-            this.PortInputBox.Size = new System.Drawing.Size(188, 22);
-            this.PortInputBox.TabIndex = 5;
-            // 
-            // PortLabel
-            // 
-            this.PortLabel.AutoSize = true;
-            this.PortLabel.Location = new System.Drawing.Point(6, 145);
-            this.PortLabel.Name = "PortLabel";
-            this.PortLabel.Size = new System.Drawing.Size(38, 17);
-            this.PortLabel.TabIndex = 6;
-            this.PortLabel.Text = "Port:";
-            // 
-            // BufferInputBox
-            // 
-            this.BufferInputBox.Location = new System.Drawing.Point(9, 223);
-            this.BufferInputBox.Name = "BufferInputBox";
-            this.BufferInputBox.Size = new System.Drawing.Size(185, 22);
-            this.BufferInputBox.TabIndex = 7;
-            // 
-            // BufferLabel
-            // 
-            this.BufferLabel.AutoSize = true;
-            this.BufferLabel.Location = new System.Drawing.Point(9, 200);
-            this.BufferLabel.Name = "BufferLabel";
-            this.BufferLabel.Size = new System.Drawing.Size(81, 17);
-            this.BufferLabel.TabIndex = 8;
-            this.BufferLabel.Text = "Buffer Size:";
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -196,7 +196,6 @@
             this.Controls.Add(this.SendMessageButton);
             this.Controls.Add(this.MessageInput);
             this.Controls.Add(this.ConnectToServerBox);
-            this.Controls.Add(this.ListenButton);
             this.Controls.Add(this.Chatscreen);
             this.MinimumSize = new System.Drawing.Size(570, 280);
             this.Name = "MainForm";
@@ -212,7 +211,6 @@
         #endregion
 
         public System.Windows.Forms.ListBox Chatscreen;
-        public System.Windows.Forms.Button ListenButton;
         public System.Windows.Forms.GroupBox ConnectToServerBox;
         public System.Windows.Forms.Label IpLabel;
         public System.Windows.Forms.Button ConnectButton;
@@ -225,6 +223,7 @@
         private System.Windows.Forms.TextBox PortInputBox;
         private System.Windows.Forms.Label NameLabel;
         private System.Windows.Forms.TextBox NameInputBox;
+        private System.Windows.Forms.Button CreateServerButton;
     }
 }
 
