@@ -48,6 +48,7 @@ namespace MultiClientChatApp
             int portNumber = ParseStringToInt(PortInputBox.Text);
             int bufferSize = ParseStringToInt(BufferInputBox.Text);
             if (!checkInputForErrors(portNumber, bufferSize)) { return; }
+
             TcpListener tcpListener = new TcpListener(IPAddress.Any, portNumber);
                 tcpListener.Start();
                 MessageInput.Enabled = false;
@@ -60,26 +61,15 @@ namespace MultiClientChatApp
             
         }
 
-        private bool checkInputForErrors(int portNumber, int bufferSize)
+        private async void CreateServerButton_Click(object sender, EventArgs e)
         {
-            if (!CheckIpAddressValidation(IpInputBox.Text))
+            try
             {
-                MessageBox.Show("Ip address is invalid, try again", "Invalid IP address", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return false;
+                await CreateServerAsync();
             }
-            if (!(portNumber >= 1024 && portNumber <= 65535))
+            catch
             {
-                MessageBox.Show("Port number is not valid, try again", "Invalid Port number", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return false;
-            }
-            else if (bufferSize < 1)
-            {
-                MessageBox.Show("Buffersize is not valid, try again", "Invalid buffer size", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return false;
-            }
-            else
-            {
-                return true;
+                MessageBox.Show("A server has already been opened.");
             }
         }
 
@@ -151,7 +141,6 @@ namespace MultiClientChatApp
             try
             {
                 AddMessage("Connecting");
-                //Check if server exists
                 tcpClient = await Task.Run(() => new TcpClient(IpInputBox.Text, portNumber));
                 await Task.Run(() => ReceiveData(bufferSize));
                 CreateServerButton.Enabled = false;
@@ -162,14 +151,6 @@ namespace MultiClientChatApp
                 MessageBox.Show(exception.Message, "No connection is possible", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
            
-        }
-
-        private int ParseStringToInt(string stringParam)
-        {
-            int number;
-            int.TryParse(stringParam, out number);
-
-            return number;
         }
 
         private void SendMessageButton_Click(object sender, EventArgs e)
@@ -183,16 +164,12 @@ namespace MultiClientChatApp
             MessageInput.Clear();
             MessageInput.Focus();
         }
+        private int ParseStringToInt(string stringParam)
+        {
+            int number;
+            int.TryParse(stringParam, out number);
 
-    private async void CreateServerButton_Click(object sender, EventArgs e){
-            try
-            {
-                await CreateServerAsync();
-            }
-            catch
-            {
-                MessageBox.Show("An error has occured");
-            }
+            return number;
         }
 
         public bool CheckIpAddressValidation(string ipAdress)
@@ -209,7 +186,30 @@ namespace MultiClientChatApp
             return splitValues.All(r => byte.TryParse(r, out readyByte));
         }
 
-    private void Form1_Load(object sender, EventArgs e)
+        private bool checkInputForErrors(int portNumber, int bufferSize)
+        {
+            if (!CheckIpAddressValidation(IpInputBox.Text))
+            {
+                MessageBox.Show("Ip address is invalid, try again", "Invalid IP address", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+            if (!(portNumber >= 1024 && portNumber <= 65535))
+            {
+                MessageBox.Show("Port number is not valid, try again", "Invalid Port number", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+            else if (bufferSize < 1)
+            {
+                MessageBox.Show("Buffersize is not valid, try again", "Invalid buffer size", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
         {
 
         }
