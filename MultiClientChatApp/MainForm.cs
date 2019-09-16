@@ -19,7 +19,7 @@ namespace MultiClientChatApp
         TcpClient tcpClient;
         NetworkStream networkStream;
 
-        protected delegate void UpdateDisplayDelegate(string message); //Alleen op de uit thread dingen aanpassen (weg)
+        protected delegate void UpdateDisplayDelegate(string message);
 
         public MainForm()
         {
@@ -46,9 +46,9 @@ namespace MultiClientChatApp
         private async Task CreateServerAsync()
         {
             int portNumber = ParseStringToInt(PortInputBox.Text);
-            if (portNumber != 0)
-            {
-                TcpListener tcpListener = new TcpListener(IPAddress.Any, portNumber);
+            int bufferSize = ParseStringToInt(BufferInputBox.Text);
+            if (!checkInputForErrors(portNumber, bufferSize)) { return; }
+            TcpListener tcpListener = new TcpListener(IPAddress.Any, portNumber);
                 tcpListener.Start();
                 MessageInput.Enabled = false;
                 SendMessageButton.Enabled = false;
@@ -56,24 +56,63 @@ namespace MultiClientChatApp
                 ConnectButton.Enabled = false;
                 AddMessage($"Server is waiting for clients...");
                 tcpClient = await Task.Run(() => tcpListener.AcceptTcpClientAsync());
-                await Task.Run(() => ReceiveData());
+                await Task.Run(() => ReceiveData(bufferSize));
+            
+        }
+
+        private bool checkInputForErrors(int portNumber, int bufferSize)
+        {
+            if (!CheckIpAddressValidation(IpInputBox.Text))
+            {
+                MessageBox.Show("Ip address is invalid, try again", "Invalid IP address", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+            if (!(portNumber >= 1024 && portNumber <= 65535))
+            {
+                MessageBox.Show("Port number is not valid, try again", "Invalid Port number", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+            else if (bufferSize < 1)
+            {
+                MessageBox.Show("Buffersize is not valid, try again", "Invalid buffer size", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+            else
+            {
+                return true;
             }
         }
 
-        private void ReceiveData()
+        private async void ReceiveData(int bufferSize)
         {
-            int bufferSize = ParseStringToInt(BufferInputBox.Text);
             string message = "";
             byte[] buffer = new byte[bufferSize];
 
             networkStream = tcpClient.GetStream();
             AddMessage("Connected!");
 
-             while (true)
+             while (networkStream.CanRead)
             {
-                int readBytes = networkStream.Read(buffer, 0, bufferSize);//Goed kijken naar de waardes
-                message = Encoding.ASCII.GetString(buffer, 0, readBytes);
-                //Exception handling and using
+
+                StringBuilder fullMessage = new StringBuilder();
+
+                do
+                {
+                    try
+                    {
+                        int readBytes = await networkStream.ReadAsync(buffer, 0, bufferSize);//Goed kijken naar de waardes
+                        message = Encoding.ASCII.GetString(buffer, 0, readBytes);
+                        fullMessage.Append(message);
+                    }
+                    catch (InvalidOperationException exception)
+                    {
+                        MessageBox.Show(exception.Message, "No connection", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        message = "bye";
+                        break;
+                    }
+                }
+                while (networkStream.DataAvailable);
+                
                 if (message == "bye")
                 {
                     break;
@@ -83,7 +122,7 @@ namespace MultiClientChatApp
             buffer = Encoding.ASCII.GetBytes("bye");
             networkStream.Write(buffer, 0, buffer.Length);
 
-            // cleanup: misschien niet nodig. Checken of ze closed zijn
+            
             networkStream.Close();
             tcpClient.Close();
 
@@ -105,21 +144,24 @@ namespace MultiClientChatApp
         private async Task CreateConnectionAsync()
         {
             int portNumber = ParseStringToInt(PortInputBox.Text);
-            Console.WriteLine(portNumber);
-            if (portNumber != 0)
+            int bufferSize = ParseStringToInt(BufferInputBox.Text);
+
+
+            if (!checkInputForErrors(portNumber, bufferSize)) { return;}
+            try
             {
                 AddMessage("Connecting");
-                Console.WriteLine(IpInputBox.Text);
+                //Check if server exists
                 tcpClient = await Task.Run(() => new TcpClient(IpInputBox.Text, portNumber));
-                ConnectButton.Enabled = false;
+                await Task.Run(() => ReceiveData(bufferSize));
                 CreateServerButton.Enabled = false;
                 NameInputBox.Enabled = false;
-                await Task.Run(() => ReceiveData());
             }
-            else
+            catch (SocketException exception)
             {
-                MessageBox.Show("Port has an invalid value");
+                MessageBox.Show(exception.Message, "No connection is possible", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+           
         }
 
         private int ParseStringToInt(string stringParam)
@@ -141,12 +183,6 @@ namespace MultiClientChatApp
             MessageInput.Clear();
             MessageInput.Focus();
         }
-        //Zorg voor afsluiting tcpListener
-
-        //private Boolean matchesRegex(String input, String regex)
-        //{
-           // return System.Text.RegularExpressions.Regex.IsMatch(input, regex);
-        //}
 
     private async void CreateServerButton_Click(object sender, EventArgs e){
             try
@@ -159,17 +195,21 @@ namespace MultiClientChatApp
             }
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        public bool CheckIpAddressValidation(string ipAdress)
         {
 
+            string[] splitValues = ipAdress.Split('.');
+            if (splitValues.Length != 4 || String.IsNullOrWhiteSpace(ipAdress)|| splitValues[3]=="")
+            {
+                return false;
+            }
+
+            byte readyByte;
+
+            return splitValues.All(r => byte.TryParse(r, out readyByte));
         }
 
-        private void Button1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void Button1_Click_1(object sender, EventArgs e)
+    private void Form1_Load(object sender, EventArgs e)
         {
 
         }
