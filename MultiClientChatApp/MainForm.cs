@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -26,7 +27,7 @@ namespace MultiClientChatApp
             InitializeComponent();
         }
 
-        private void AddMessage(string message) 
+        private void AddMessage(string message)
         {
             if (Chatscreen.InvokeRequired)
             {
@@ -50,15 +51,20 @@ namespace MultiClientChatApp
             if (!checkInputForErrors(portNumber, bufferSize)) { return; }
 
             TcpListener tcpListener = new TcpListener(IPAddress.Any, portNumber);
-                tcpListener.Start();
-                MessageInput.Enabled = false;
-                SendMessageButton.Enabled = false;
-                CreateServerButton.Enabled = false;
-                ConnectButton.Enabled = false;
-                AddMessage($"Server is waiting for clients...");
+            tcpListener.Start();
+            MessageInput.Enabled = false;
+            SendMessageButton.Enabled = false;
+            ConnectButton.Enabled = false;
+            PortInputBox.Enabled = false;
+            NameInputBox.Enabled = false;
+            BufferInputBox.Enabled = false;
+            IpInputBox.Enabled = false;
+            AddMessage($"Server is waiting for clients...");
+            while (true)
+            {
                 tcpClient = await Task.Run(() => tcpListener.AcceptTcpClientAsync());
                 await Task.Run(() => ReceiveData(bufferSize));
-            
+            }
         }
 
         private async void CreateServerButton_Click(object sender, EventArgs e)
@@ -81,7 +87,7 @@ namespace MultiClientChatApp
             networkStream = tcpClient.GetStream();
             AddMessage("Connected!");
 
-             while (networkStream.CanRead)
+            while (networkStream.CanRead)
             {
 
                 StringBuilder fullMessage = new StringBuilder();
@@ -90,29 +96,25 @@ namespace MultiClientChatApp
                 {
                     try
                     {
-                        int readBytes = await networkStream.ReadAsync(buffer, 0, bufferSize);//Goed kijken naar de waardes
+                        int readBytes = await networkStream.ReadAsync(buffer, 0, bufferSize);
                         message = Encoding.ASCII.GetString(buffer, 0, readBytes);
                         fullMessage.Append(message);
                     }
-                    catch (InvalidOperationException exception)
+                    catch (IOException)
                     {
-                        MessageBox.Show(exception.Message, "No connection", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         message = "bye";
                         break;
                     }
                 }
                 while (networkStream.DataAvailable);
-                
+
                 if (message == "bye")
                 {
                     break;
                 }
                 AddMessage(message);
             }
-            buffer = Encoding.ASCII.GetBytes("bye");
-            networkStream.Write(buffer, 0, buffer.Length);
 
-            
             networkStream.Close();
             tcpClient.Close();
 
@@ -135,22 +137,28 @@ namespace MultiClientChatApp
         {
             int portNumber = ParseStringToInt(PortInputBox.Text);
             int bufferSize = ParseStringToInt(BufferInputBox.Text);
+            if (NameInputBox.Text.Length == 0 || NameInputBox.Text == "")
+            {
+                MessageBox.Show("No username has been given", "No username", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
-
-            if (!checkInputForErrors(portNumber, bufferSize)) { return;}
+            if (!checkInputForErrors(portNumber, bufferSize)) { return; }
+            AddMessage("Connecting");
             try
             {
-                AddMessage("Connecting");
-                tcpClient = await Task.Run(() => new TcpClient(IpInputBox.Text, portNumber));
+                tcpClient = new TcpClient();
+                await tcpClient.ConnectAsync(IpInputBox.Text, portNumber);
                 await Task.Run(() => ReceiveData(bufferSize));
-                CreateServerButton.Enabled = false;
-                NameInputBox.Enabled = false;
             }
             catch (SocketException exception)
             {
                 MessageBox.Show(exception.Message, "No connection is possible", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-           
+            CreateServerButton.Enabled = false;
+            NameInputBox.Enabled = false;
+
+
         }
 
         private void SendMessageButton_Click(object sender, EventArgs e)
@@ -176,7 +184,7 @@ namespace MultiClientChatApp
         {
 
             string[] splitValues = ipAdress.Split('.');
-            if (splitValues.Length != 4 || String.IsNullOrWhiteSpace(ipAdress)|| splitValues[3]=="")
+            if (splitValues.Length != 4 || String.IsNullOrWhiteSpace(ipAdress) || splitValues[3] == "")
             {
                 return false;
             }

@@ -104,6 +104,7 @@
             this.BufferInputBox.Name = "BufferInputBox";
             this.BufferInputBox.Size = new System.Drawing.Size(185, 22);
             this.BufferInputBox.TabIndex = 7;
+            this.BufferInputBox.Text = "1024";
             // 
             // PortLabel
             // 
@@ -120,6 +121,7 @@
             this.PortInputBox.Name = "PortInputBox";
             this.PortInputBox.Size = new System.Drawing.Size(188, 22);
             this.PortInputBox.TabIndex = 5;
+            this.PortInputBox.Text = "9000";
             // 
             // NameLabel
             // 
@@ -155,6 +157,7 @@
             this.IpInputBox.Name = "IpInputBox";
             this.IpInputBox.Size = new System.Drawing.Size(191, 22);
             this.IpInputBox.TabIndex = 1;
+            this.IpInputBox.Text = "127.0.0.1";
             // 
             // IpLabel
             // 
