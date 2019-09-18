@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -25,6 +26,7 @@ namespace MultiClientChatApp
         public MainForm()
         {
             InitializeComponent();
+            SendMessageButton.Enabled = false;
         }
 
         private void AddMessage(string message)
@@ -50,20 +52,28 @@ namespace MultiClientChatApp
             int bufferSize = ParseStringToInt(BufferInputBox.Text);
             if (!checkInputForErrors(portNumber, bufferSize)) { return; }
 
-            TcpListener tcpListener = new TcpListener(IPAddress.Any, portNumber);
-            tcpListener.Start();
-            MessageInput.Enabled = false;
-            SendMessageButton.Enabled = false;
-            ConnectButton.Enabled = false;
-            PortInputBox.Enabled = false;
-            NameInputBox.Enabled = false;
-            BufferInputBox.Enabled = false;
-            IpInputBox.Enabled = false;
-            AddMessage($"Server is waiting for clients...");
-            while (true)
+            try
             {
-                tcpClient = await Task.Run(() => tcpListener.AcceptTcpClientAsync());
-                await Task.Run(() => ReceiveData(bufferSize));
+                TcpListener tcpListener = new TcpListener(IPAddress.Any, portNumber);
+                tcpListener.Start();
+                MessageInput.Enabled = false;
+                SendMessageButton.Enabled = false;
+                ConnectButton.Enabled = false;
+                PortInputBox.Enabled = false;
+                NameInputBox.Enabled = false;
+                BufferInputBox.Enabled = false;
+                IpInputBox.Enabled = false;
+                AddMessage($"Server is waiting for clients on port: {portNumber}");
+                while (true)
+                {
+                    tcpClient = await Task.Run(() => tcpListener.AcceptTcpClientAsync());
+                    SendMessageButton.Enabled = true;
+                    await Task.Run(() => ReceiveData(bufferSize));
+                }
+            }
+            catch (SocketException)
+            {
+                MessageBox.Show("Cannot start a server", "Server error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -84,41 +94,62 @@ namespace MultiClientChatApp
             string message = "";
             byte[] buffer = new byte[bufferSize];
 
-            networkStream = tcpClient.GetStream();
-            AddMessage("Connected!");
-
-            while (networkStream.CanRead)
+            using (networkStream = tcpClient.GetStream())
             {
+                AddMessage("Connected!");
 
-                StringBuilder fullMessage = new StringBuilder();
-
-                do
+                while (networkStream.CanRead)
                 {
-                    try
+
+                    StringBuilder fullMessage = new StringBuilder();
+
+                    do
                     {
-                        int readBytes = await networkStream.ReadAsync(buffer, 0, bufferSize);
-                        message = Encoding.ASCII.GetString(buffer, 0, readBytes);
-                        fullMessage.Append(message);
+                        try
+                        {
+                            int readBytes = await networkStream.ReadAsync(buffer, 0, bufferSize);
+                            message = Encoding.ASCII.GetString(buffer, 0, readBytes);
+                            fullMessage.Append(message);
+                        }
+                        catch (IOException)
+                        {
+                            message = "bye";
+                            break;
+                        }
                     }
-                    catch (IOException)
+                    while (networkStream.DataAvailable);
+
+                    string decodedType = ProtocolRegexCheck(fullMessage.ToString(), new Regex(@"(?<=\@)(.*?)(?=\|{2})"));
+                    string decodedUsername = ProtocolRegexCheck(fullMessage.ToString(), new Regex(@"(?<=\|{2})(.*?)(?=\|{2})"));
+                    string decodedMessage = DecodeMessage(ProtocolRegexCheck(ProtocolRegexCheck(fullMessage.ToString(), new Regex(@"\|(?:.(?!\|))+$")), new Regex(@"(?<=\|{2})(.*?)(?=\@)")));
+
+                    if (decodedType == "INFO" && decodedMessage == "disconnect")
                     {
-                        message = "bye";
                         break;
                     }
-                }
-                while (networkStream.DataAvailable);
 
-                if (message == "bye")
-                {
-                    break;
+                    else if (decodedType == "MESSAGE")
+                    {
+                        AddMessage($"{decodedUsername}: {decodedMessage}");
+                        // Send message to other clients.
+                    }
                 }
-                AddMessage(message);
             }
-
-            networkStream.Close();
             tcpClient.Close();
-
             AddMessage("Connection closed");
+        }
+
+        private string ProtocolRegexCheck(string message, Regex regex)
+        {
+            return regex.Match(message).ToString();
+        }
+
+        private string DecodeMessage(string str)
+        {
+            str = Regex.Replace(str, "[&#124]", "|");
+            str = Regex.Replace(str, "[&#64]", "@");
+
+            return str;
         }
 
         private async void ConnectButton_Click(object sender, EventArgs e)
@@ -137,7 +168,7 @@ namespace MultiClientChatApp
         {
             int portNumber = ParseStringToInt(PortInputBox.Text);
             int bufferSize = ParseStringToInt(BufferInputBox.Text);
-            if (NameInputBox.Text.Length == 0 || NameInputBox.Text == "")
+            if (String.IsNullOrWhiteSpace(NameInputBox.Text))
             {
                 MessageBox.Show("No username has been given", "No username", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
@@ -150,28 +181,53 @@ namespace MultiClientChatApp
                 tcpClient = new TcpClient();
                 await tcpClient.ConnectAsync(IpInputBox.Text, portNumber);
                 await Task.Run(() => ReceiveData(bufferSize));
+                CreateServerButton.Enabled = false;
+                NameInputBox.Enabled = false;
+                SendMessageButton.Enabled = true;
             }
             catch (SocketException exception)
             {
                 MessageBox.Show(exception.Message, "No connection is possible", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-            CreateServerButton.Enabled = false;
-            NameInputBox.Enabled = false;
+            
 
 
         }
 
-        private void SendMessageButton_Click(object sender, EventArgs e)
+        private async void SendMessageButton_Click(object sender, EventArgs e)
         {
-            string message = $"{NameInputBox.Text}:{MessageInput.Text}";
+            if (NameInputBox.Text == "" || networkStream == null)
+            {
+                return;
+            }
+            await SendMessageAsync("MESSAGE", NameInputBox.Text, MessageInput.Text);
+        }
 
-            byte[] buffer = Encoding.ASCII.GetBytes(message);
-            networkStream.Write(buffer, 0, buffer.Length);
+        private async Task SendMessageAsync(string type, string name, string message)
+        {
+            string completedMessage = EncodeMessage(type, name, message);
 
-            AddMessage(message);
+            byte[] buffer = Encoding.ASCII.GetBytes(completedMessage);
+            await networkStream.WriteAsync(buffer, 0, buffer.Length);
+
+            AddMessage($"{name}: {message}");
             MessageInput.Clear();
             MessageInput.Focus();
         }
+
+        private string EncodeMessage(string type, string name, string message)
+        {
+            type = Regex.Replace(type, "[|]", "&#124");
+            type = Regex.Replace(type, "[@]", "&#64");
+            name = Regex.Replace(name, "[|]", "&#124");
+            name = Regex.Replace(name, "[@]", "&#64");
+            message = Regex.Replace(message, "[|]", "&#124");
+            message = Regex.Replace(message, "[@]", "&#64");
+            string newMessage = $"@{type}||{name}||{message}@";
+
+            return newMessage;
+        }
+
         private int ParseStringToInt(string stringParam)
         {
             int number;
