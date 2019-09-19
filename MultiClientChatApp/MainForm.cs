@@ -388,23 +388,23 @@ namespace MultiClientChatApp
         //Disconnects server
         private async Task DisconnectAsync(string type, string name, string message)
         {
-            AddMessage("Closing...");
-            string completeMessage = EncodeMessage(type, name, message);
+                AddMessage("Closing...");
+                string completeMessage = EncodeMessage(type, name, message);
 
-            foreach (TcpClient user in clientList)
-            {
-                await SendServerMessageOnNetworkAsync(user.GetStream(), completeMessage);
-            }
+                foreach (TcpClient user in clientList)
+                {
+                    await SendServerMessageOnNetworkAsync(user.GetStream(), completeMessage);
+                }
 
-            started = false;
+                started = false;
 
-            TcpClient tcpClient = new TcpClient();
-            tcpClient.Connect("127.0.0.1", ParseStringToInt(PortInputBox.Text));
-            await SendServerDisconnectMessageAsync(tcpClient.GetStream(), "INFO", name, "disconnecting");
-            tcpClient.Close();
+                TcpClient tcpClient = new TcpClient();
+                tcpClient.Connect("127.0.0.1", ParseStringToInt(PortInputBox.Text));
+                await SendServerDisconnectMessageAsync(tcpClient.GetStream(), "INFO", name, "disconnecting");
+                tcpClient.Close();
 
-            DisconnectButton.Enabled = false;
-            CreateServerButton.Enabled = true;
+                DisconnectButton.Enabled = false;
+                CreateServerButton.Enabled = true;
         }
 
         //Disconnects user
@@ -422,7 +422,7 @@ namespace MultiClientChatApp
         }
 
         //Everything related to receiving data in the client
-        private async void ReceiveClientData(int bufferSize)
+        private async Task ReceiveClientData(int bufferSize)
         {
             string message = "";
             byte[] buffer = new byte[bufferSize];
