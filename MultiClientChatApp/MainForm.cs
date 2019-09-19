@@ -357,18 +357,23 @@ namespace MultiClientChatApp
             {
                 if (NameInputBox.Text == "Server")
                 {
+                    AddMessage("Server is closing");
 
-                    await DisconnectAsync("INFO", "Server", "DISCONNECT");
-                    NameInputBox.Text = "";
-                    CreateServerButton.Enabled = true;
+                    foreach (TcpClient user in clientList)
+                    {
+                        await DisconnectAsync(user.GetStream(), "INFO", "Server", "DISCONNECT");
+                    }
+
+                    started = false;
+
+                    TcpClient tcpClient = new TcpClient();
+                    tcpClient.Connect("127.0.0.1", ParseStringToInt(PortInputBox.Text));
+                    await DisconnectAsync(tcpClient.GetStream(), "INFO", "DUMMY","disconnectFromServer");
+                    tcpClient.Close();
                 }
                 else
                 {
                     await DisconnectClientAsync(NameInputBox.Text);
-                    NameInputBox.Enabled = true;
-                    CreateServerButton.Enabled = true;
-                    DisconnectButton.Enabled = false;
-                    ConnectButton.Enabled = true;
                 }
             }
             catch (IOException)
@@ -386,25 +391,13 @@ namespace MultiClientChatApp
         }
 
         //Disconnects server
-        private async Task DisconnectAsync(string type, string name, string message)
+        private async Task DisconnectAsync(NetworkStream stream, string type, string name, string message)
         {
-                AddMessage("Closing...");
-                string completeMessage = EncodeMessage(type, name, message);
 
-                foreach (TcpClient user in clientList)
-                {
-                    await SendServerMessageOnNetworkAsync(user.GetStream(), completeMessage);
-                }
+            string completedMessage = EncodeMessage(type, name, message);
 
-                started = false;
-
-                TcpClient tcpClient = new TcpClient();
-                tcpClient.Connect("127.0.0.1", ParseStringToInt(PortInputBox.Text));
-                await SendServerDisconnectMessageAsync(tcpClient.GetStream(), "INFO", name, "disconnecting");
-                tcpClient.Close();
-
-                DisconnectButton.Enabled = false;
-                CreateServerButton.Enabled = true;
+            byte[] buffer = Encoding.ASCII.GetBytes(completedMessage);
+            await stream.WriteAsync(buffer, 0, buffer.Length);
         }
 
         //Disconnects user
