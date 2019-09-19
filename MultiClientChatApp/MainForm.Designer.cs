@@ -185,7 +185,7 @@
             // 
             this.MessageInput.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.MessageInput.Location = new System.Drawing.Point(6, 398);
+            this.MessageInput.Location = new System.Drawing.Point(18, 397);
             this.MessageInput.Name = "MessageInput";
             this.MessageInput.Size = new System.Drawing.Size(459, 22);
             this.MessageInput.TabIndex = 5;
@@ -194,7 +194,7 @@
             // 
             this.SendMessageButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.SendMessageButton.CausesValidation = false;
-            this.SendMessageButton.Location = new System.Drawing.Point(471, 397);
+            this.SendMessageButton.Location = new System.Drawing.Point(483, 397);
             this.SendMessageButton.Name = "SendMessageButton";
             this.SendMessageButton.Size = new System.Drawing.Size(75, 23);
             this.SendMessageButton.TabIndex = 6;

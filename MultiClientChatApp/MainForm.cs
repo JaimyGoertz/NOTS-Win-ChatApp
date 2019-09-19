@@ -45,6 +45,7 @@ namespace MultiClientChatApp
         private void UpdateDisplay(string message)
         {
             Chatscreen.Items.Add(message);
+            Chatscreen.SelectedIndex = Chatscreen.Items.Count - 1;
         }
 
         //Creates server
@@ -65,7 +66,9 @@ namespace MultiClientChatApp
                 NameInputBox.Enabled = false;
                 BufferInputBox.Enabled = false;
                 IpInputBox.Enabled = false;
-                DisconnectButton.Enabled = false;
+                SendMessageButton.Enabled = false;
+                CreateServerButton.Enabled = false;
+                DisconnectButton.Enabled = true;
                 AddMessage($"Server is waiting for clients on port: {portNumber}");
                 while (true)
                 {
@@ -237,10 +240,7 @@ namespace MultiClientChatApp
         //Send message button event handler
         private async void SendMessageButton_Click(object sender, EventArgs e)
         {
-            if (NameInputBox.Text == "" || networkStream == null)
-            {
-                return;
-            }
+            if (String.IsNullOrWhiteSpace(MessageInput.Text)){return;}
             try
             {
                 await SendMessageAsync("MESSAGE", NameInputBox.Text, MessageInput.Text);
@@ -257,7 +257,6 @@ namespace MultiClientChatApp
             string completedMessage = EncodeMessage(type, name, message);
             byte[] buffer = Encoding.ASCII.GetBytes(completedMessage);
             await networkStream.WriteAsync(buffer, 0, buffer.Length);
-            Console.WriteLine("joe");
             AddMessage($"{name}: {message}");
             MessageInput.Clear();
             MessageInput.Focus();
@@ -312,7 +311,7 @@ namespace MultiClientChatApp
                 MessageBox.Show("Port number is not valid, try again", "Invalid Port number", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
-            else if (bufferSize < 1)
+            else if (bufferSize <= 1)
             {
                 MessageBox.Show("Buffersize is not valid, try again", "Invalid buffer size", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
