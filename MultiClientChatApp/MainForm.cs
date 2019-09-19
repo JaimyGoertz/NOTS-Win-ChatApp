@@ -98,18 +98,24 @@ namespace MultiClientChatApp
             {
                 if (user.Client.RemoteEndPoint != client.Client.RemoteEndPoint)
                 {
-                    await SendMessageOnNetworkAsync(user.GetStream(), completeMessage);
+                    await SendServerMessageOnNetworkAsync(user.GetStream(), completeMessage);
                 }
             }
         }
 
-        private async Task SendMessageOnNetworkAsync(NetworkStream stream, string message)
+        private async Task SendServerMessageOnNetworkAsync(NetworkStream stream, string message)
         {
             byte[] buffer = Encoding.ASCII.GetBytes(message);
             await stream.WriteAsync(buffer, 0, buffer.Length);
         }
 
-        private async Task ReceiveServerData(TcpClient client, int bufferSize)
+        private async Task SendClientMessageOnNetworkAsync(string message)
+        {
+            byte[] buffer = Encoding.ASCII.GetBytes(message);
+            await networkStream.WriteAsync(buffer, 0, buffer.Length);
+        }
+
+        private async void ReceiveServerData(TcpClient client, int bufferSize)
         {
             string message = "";
             byte[] buffer = new byte[bufferSize];
@@ -132,9 +138,8 @@ namespace MultiClientChatApp
                     }
                     catch (IOException ex)
                     {
-                        MessageBox.Show(ex.Message, "No connection is possible", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         fullMessage.Clear();
-                        fullMessage.Append("@INFO||unknown||DISCONNECT");
+                        fullMessage.Append("@INFO||unknown||disconnect@");
                         break;
                     }
                 }
@@ -146,22 +151,20 @@ namespace MultiClientChatApp
 
                 if (decodedType == "INFO" && decodedMessage == "disconnectFromServer")
                 {
-                    await SendDisconnectAsync(network, "INFO", decodedUsername, "disconnectFromClient");
+                    await SendServerDisconnectAsync(network, "INFO", decodedUsername, "disconnect");
                     break;
                 }
-                else if (decodedType == "INFO" && decodedMessage == "disconnectFromClient")
+                else if (decodedType == "INFO" && decodedMessage == "disconnect")
                 {
                     break;
                 }
-                else if (decodedType == "MESSAGE")
-                {
                     await BroadcastMessage(client, decodedType, decodedUsername, decodedMessage);
                     AddMessage($"{decodedUsername}: {decodedMessage}");
-                }
+                
             }
             network.Close();
             client.Close();
-
+            clientList.RemoveAll(user => !user.Connected);
             AddMessage($"Connection with a client has closed!");
         }
 
@@ -205,13 +208,14 @@ namespace MultiClientChatApp
             try
             {
                 SendMessageButton.Enabled = true;
+                CreateServerButton.Enabled = false;
+                NameInputBox.Enabled = false;
+                ConnectButton.Enabled = false;
+                DisconnectButton.Enabled = true;
                 tcpClient = new TcpClient();
                 await tcpClient.ConnectAsync(IpInputBox.Text, portNumber);
                 await Task.Run(() => ReceiveClientData(bufferSize));
-                CreateServerButton.Enabled = false;
-                NameInputBox.Enabled = false;
-                
-                DisconnectButton.Enabled = true;
+
             }
             catch (SocketException)
             {
@@ -240,7 +244,7 @@ namespace MultiClientChatApp
             string completedMessage = EncodeMessage(type, name, message);
             byte[] buffer = Encoding.ASCII.GetBytes(completedMessage);
             await networkStream.WriteAsync(buffer, 0, buffer.Length);
-
+            Console.WriteLine("joe");
             AddMessage($"{name}: {message}");
             MessageInput.Clear();
             MessageInput.Focus();
@@ -307,7 +311,7 @@ namespace MultiClientChatApp
         {
             try
             {
-                await DisconnectAsync();
+                await DisconnectAsync(NameInputBox.Text);
             }
             catch (IOException)
             {
@@ -317,39 +321,41 @@ namespace MultiClientChatApp
             {
                 MessageBox.Show("Warning: No clients found.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
+            catch
+            {
+                MessageBox.Show("An error has occurred.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
         }
 
-        private async Task DisconnectAsync()
+        private async Task DisconnectAsync(string username)
         {
-            await SendMessageAsync("INFO", "server", "disconnectFromServer");
+            ConnectButton.Enabled = true;
+            DisconnectButton.Enabled = false;
+            NameInputBox.Enabled = true;
+            CreateServerButton.Enabled = true;
+            await SendClientDisconnectAsync("INFO", username, "disconnectFromServer");
         }
 
-        private async Task ReceiveClientData(int bufferSize)
+        private async void ReceiveClientData(int bufferSize)
         {
             string message = "";
             byte[] buffer = new byte[bufferSize];
             networkStream = tcpClient.GetStream();
 
             AddMessage("Connected!");
-
-            while (networkStream.CanRead)
+            try
+            {
+                while (networkStream.CanRead)
             {
 
                 StringBuilder fullMessage = new StringBuilder();
 
                 do
                 {
-                    try
-                    {
                         int readBytes = await networkStream.ReadAsync(buffer, 0, bufferSize);
                         message = Encoding.ASCII.GetString(buffer, 0, readBytes);
                         fullMessage.Append(message);
-                    }
-                    catch (IOException)
-                    {
-                        message = "bye";
-                        break;
-                    }
+                    
                 }
                 while (networkStream.DataAvailable);
 
@@ -357,12 +363,12 @@ namespace MultiClientChatApp
                 string decodedUsername = ProtocolRegexCheck(fullMessage.ToString(), new Regex(@"(?<=\|{2})(.*?)(?=\|{2})"));
                 string decodedMessage = DecodeMessage(ProtocolRegexCheck(ProtocolRegexCheck(fullMessage.ToString(), new Regex(@"\|(?:.(?!\|))+$")), new Regex(@"(?<=\|{2})(.*?)(?=\@)")));
 
-                if (decodedType == "INFO" && decodedMessage == "disconnectToServer")
+                if (decodedType == "INFO" && decodedMessage == "disconnectFromServer")
                 {
-                    await SendDisconnectAsync(networkStream, "INFO", decodedUsername, "disconnectToClient");
+                    await SendClientDisconnectAsync("INFO", NameInputBox.Text, "disconnect");
                     break;
                 }
-                else if (decodedType == "INFO" && decodedMessage == "disconnectToClient")
+                else if (decodedType == "INFO" && decodedMessage == "disconnect")
                 {
                     break;
                 }
@@ -370,17 +376,33 @@ namespace MultiClientChatApp
                 {
                     AddMessage($"{decodedUsername}: {decodedMessage}");
                 }
+                if (message == "bye")
+                {
+                    break;
+                }
+            }
+            }
+            catch (IOException)
+            {
+                MessageBox.Show("Server is closed", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             networkStream.Close();
             tcpClient.Close();
             AddMessage($"Connection has been closed!");
         }
 
-        private async Task SendDisconnectAsync(NetworkStream stream, string type, string username, string message)
+        private async Task SendServerDisconnectAsync(NetworkStream stream, string type, string username, string message)
         {
             string finalMessage = EncodeMessage(type, username, message);
 
-            await SendMessageOnNetworkAsync(stream, finalMessage);
+            await SendServerMessageOnNetworkAsync(stream, finalMessage);
+        }
+
+        private async Task SendClientDisconnectAsync(string type, string username, string message)
+        {
+            string finalMessage = EncodeMessage(type, username, message);
+
+            await SendClientMessageOnNetworkAsync(finalMessage);
         }
     }
 }
