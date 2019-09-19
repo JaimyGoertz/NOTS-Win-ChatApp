@@ -58,41 +58,37 @@ namespace MultiClientChatApp
             NameInputBox.Text = username;
             started = true;
             if (!checkInputForErrors(portNumber, bufferSize, ip)) { return; }
-
-            try
+            TcpListener tcpListener = new TcpListener(IPAddress.Parse(ip), portNumber);
+            tcpListener.Start();
+            MessageInput.Enabled = true;
+            SendMessageButton.Enabled = true;
+            ConnectButton.Enabled = false;
+            PortInputBox.Enabled = false;
+            NameInputBox.Enabled = false;
+            BufferInputBox.Enabled = false;
+            IpInputBox.Enabled = false;
+            SendMessageButton.Enabled = false;
+            CreateServerButton.Enabled = false;
+            DisconnectButton.Enabled = true;
+            AddMessage($"Server is waiting for clients on port: {portNumber}");
+            do
             {
-                TcpListener tcpListener = new TcpListener(IPAddress.Parse(ip), portNumber);
-                tcpListener.Start();
-                MessageInput.Enabled = true;
+                TcpClient tcpClient = await tcpListener.AcceptTcpClientAsync();
                 SendMessageButton.Enabled = true;
-                ConnectButton.Enabled = false;
-                PortInputBox.Enabled = false;
-                NameInputBox.Enabled = false;
-                BufferInputBox.Enabled = false;
-                IpInputBox.Enabled = false;
-                SendMessageButton.Enabled = false;
-                CreateServerButton.Enabled = false;
-                DisconnectButton.Enabled = true;
-                AddMessage($"Server is waiting for clients on port: {portNumber}");
-                while (started)
-                {
-                    TcpClient tcpClient = await tcpListener.AcceptTcpClientAsync();
-                    SendMessageButton.Enabled = true;
-                    clientList.Add(tcpClient);
-                    await Task.Run(() => ReceiveServerData(tcpClient, bufferSize));
-                }
-                ConnectButton.Enabled = true;
-                CreateServerButton.Enabled = true;
-                DisconnectButton.Enabled = false;
-                NameInputBox.Enabled = true;
-                IpInputBox.Enabled = true;
-                PortInputBox.Enabled = true;
-                BufferInputBox.Enabled = true;
+                clientList.Add(tcpClient);
+                await Task.Run(() => ReceiveServerData(tcpClient, bufferSize));
             }
-            catch (SocketException)
-            {
-                MessageBox.Show("Cannot start a server", "Server start error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            while (started);
+            ConnectButton.Enabled = true;
+            CreateServerButton.Enabled = true;
+            DisconnectButton.Enabled = false;
+            NameInputBox.Enabled = true;
+            IpInputBox.Enabled = true;
+            PortInputBox.Enabled = true;
+            BufferInputBox.Enabled = true;
+
+            tcpListener.Stop();
+
         }
 
         //Create Server button event handler
@@ -165,7 +161,7 @@ namespace MultiClientChatApp
                     catch (IOException)
                     {
                         fullMessage.Clear();
-                        fullMessage.Append("@INFO||unknown||disconnect@");
+                        fullMessage.Append("@INFO||username||DISCONNECT@");
                         break;
                     }
                 }
@@ -184,9 +180,11 @@ namespace MultiClientChatApp
                 {
                     break;
                 }
-                await BroadcastMessageToClients(client, decodedType, decodedUsername, decodedMessage);
-                AddMessage($"{decodedUsername}: {decodedMessage}");
-
+                if (decodedType == "MESSAGE")
+                {
+                    await BroadcastMessageToClients(client, decodedType, decodedUsername, decodedMessage);
+                    AddMessage($"{decodedUsername}: {decodedMessage}");
+                }
             }
             network.Close();
             client.Close();
@@ -237,7 +235,8 @@ namespace MultiClientChatApp
             AddMessage("Connecting");
             try
             {
-               
+                tcpClient = new TcpClient();
+                await tcpClient.ConnectAsync(ip, portNumber);
 
                 SendMessageButton.Enabled = true;
                 CreateServerButton.Enabled = false;
@@ -247,9 +246,9 @@ namespace MultiClientChatApp
                 IpInputBox.Enabled = false;
                 PortInputBox.Enabled = false;
                 BufferInputBox.Enabled = false;
-                tcpClient = new TcpClient();
-                await tcpClient.ConnectAsync(ip, portNumber);
+
                 await Task.Run(() => ReceiveClientData(bufferSize));
+
                 ConnectButton.Enabled = true;
                 CreateServerButton.Enabled = true;
                 SendMessageButton.Enabled = false;
@@ -358,24 +357,18 @@ namespace MultiClientChatApp
             {
                 if (NameInputBox.Text == "Server")
                 {
-                    AddMessage("Server: Closing...");
 
-                    foreach (TcpClient user in clientList)
-                    {
-                        await DisconnectAsync(user.GetStream(), "INFO", "Server", "DISCONNECT");
-                    }
-
-                    started = false;
-
-                    TcpClient tcpClient = new TcpClient();
-                    tcpClient.Connect("127.0.0.1", ParseStringToInt(PortInputBox.Text));
-                    await DisconnectAsync(tcpClient.GetStream(), "INFO", "DUMMY", "disconnectFromServer");
-                    tcpClient.Close();
-
+                    await DisconnectAsync("INFO", "Server", "DISCONNECT");
+                    NameInputBox.Text = "";
+                    CreateServerButton.Enabled = true;
                 }
                 else
                 {
                     await DisconnectClientAsync(NameInputBox.Text);
+                    NameInputBox.Enabled = true;
+                    CreateServerButton.Enabled = true;
+                    DisconnectButton.Enabled = false;
+                    ConnectButton.Enabled = true;
                 }
             }
             catch (IOException)
@@ -393,12 +386,25 @@ namespace MultiClientChatApp
         }
 
         //Disconnects server
-        private async Task DisconnectAsync(NetworkStream stream, string type, string name, string message)
+        private async Task DisconnectAsync(string type, string name, string message)
         {
-            string endMessage = EncodeMessage(type, name, message);
+            AddMessage("Closing...");
+            string completeMessage = EncodeMessage(type, name, message);
 
-            byte[] buffer = Encoding.ASCII.GetBytes(endMessage);
-            await stream.WriteAsync(buffer, 0, buffer.Length);
+            foreach (TcpClient user in clientList)
+            {
+                await SendServerMessageOnNetworkAsync(user.GetStream(), completeMessage);
+            }
+
+            started = false;
+
+            TcpClient tcpClient = new TcpClient();
+            tcpClient.Connect("127.0.0.1", ParseStringToInt(PortInputBox.Text));
+            await SendServerDisconnectMessageAsync(tcpClient.GetStream(), "INFO", name, "disconnecting");
+            tcpClient.Close();
+
+            DisconnectButton.Enabled = false;
+            CreateServerButton.Enabled = true;
         }
 
         //Disconnects user
@@ -412,7 +418,7 @@ namespace MultiClientChatApp
             NameInputBox.Enabled = true;
             IpInputBox.Enabled = true;
             PortInputBox.Enabled = true;
-            BufferInputBox.Enabled = true;      
+            BufferInputBox.Enabled = true;
         }
 
         //Everything related to receiving data in the client
