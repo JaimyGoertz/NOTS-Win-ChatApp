@@ -28,6 +28,7 @@ namespace MultiClientChatApp
             DisconnectButton.Enabled = false;
         }
 
+       //Send messages to the user
         private void AddMessage(string message)
         {
             if (Chatscreen.InvokeRequired)
@@ -40,11 +41,13 @@ namespace MultiClientChatApp
             }
         }
 
+        //Updates Users screen so the message is visible
         private void UpdateDisplay(string message)
         {
             Chatscreen.Items.Add(message);
         }
 
+        //Creates server
         private async Task CreateServerAsync(string port, string buffer, string ip)
         {
             int portNumber = ParseStringToInt(port);
@@ -78,11 +81,12 @@ namespace MultiClientChatApp
             }
         }
 
+        //Create Server button event handler
         private async void CreateServerButton_Click(object sender, EventArgs e)
         {
             try
             {
-                await CreateServerAsync(PortInputBox.Text,BufferInputBox.Text, IpInputBox.Text);
+                await CreateServerAsync(PortInputBox.Text, BufferInputBox.Text, IpInputBox.Text);
             }
             catch
             {
@@ -90,6 +94,7 @@ namespace MultiClientChatApp
             }
         }
 
+        //Broadcasts message to al clients in the clientlist
         private async Task BroadcastMessage(TcpClient client, string type, string username, string message)
         {
             string completeMessage = EncodeMessage(type, username, message);
@@ -103,18 +108,21 @@ namespace MultiClientChatApp
             }
         }
 
+        //Sends message given on server over the network
         private async Task SendServerMessageOnNetworkAsync(NetworkStream stream, string message)
         {
             byte[] buffer = Encoding.ASCII.GetBytes(message);
             await stream.WriteAsync(buffer, 0, buffer.Length);
         }
 
+        //Sends message given on client over the network
         private async Task SendClientMessageOnNetworkAsync(string message)
         {
             byte[] buffer = Encoding.ASCII.GetBytes(message);
             await networkStream.WriteAsync(buffer, 0, buffer.Length);
         }
 
+        //Everything related to receiving data on the server
         private async void ReceiveServerData(TcpClient client, int bufferSize)
         {
             string message = "";
@@ -158,9 +166,9 @@ namespace MultiClientChatApp
                 {
                     break;
                 }
-                    await BroadcastMessage(client, decodedType, decodedUsername, decodedMessage);
-                    AddMessage($"{decodedUsername}: {decodedMessage}");
-                
+                await BroadcastMessage(client, decodedType, decodedUsername, decodedMessage);
+                AddMessage($"{decodedUsername}: {decodedMessage}");
+
             }
             network.Close();
             client.Close();
@@ -168,11 +176,13 @@ namespace MultiClientChatApp
             AddMessage($"Connection with a client has closed!");
         }
 
+        //Checks a message with a certain regex condition
         private string ProtocolRegexCheck(string message, Regex regex)
         {
             return regex.Match(message).ToString();
         }
 
+        //Decodes given string message
         private string DecodeMessage(string str)
         {
             str = Regex.Replace(str, "[&#124]", "|");
@@ -181,6 +191,7 @@ namespace MultiClientChatApp
             return str;
         }
 
+        //Connect to server button event handler
         private async void ConnectButton_Click(object sender, EventArgs e)
         {
             try
@@ -193,6 +204,7 @@ namespace MultiClientChatApp
             }
         }
 
+        //Creates a connection with the server
         private async Task CreateConnectionAsync(string port, string buffer, string ip, string name)
         {
             int portNumber = ParseStringToInt(port);
@@ -203,7 +215,7 @@ namespace MultiClientChatApp
                 return;
             }
 
-            if (!checkInputForErrors(portNumber, bufferSize,ip)) { return; }
+            if (!checkInputForErrors(portNumber, bufferSize, ip)) { return; }
             AddMessage("Connecting");
             try
             {
@@ -215,7 +227,6 @@ namespace MultiClientChatApp
                 tcpClient = new TcpClient();
                 await tcpClient.ConnectAsync(ip, portNumber);
                 await Task.Run(() => ReceiveClientData(bufferSize, NameInputBox.Text));
-
             }
             catch (SocketException)
             {
@@ -223,6 +234,7 @@ namespace MultiClientChatApp
             }
         }
 
+        //Send message button event handler
         private async void SendMessageButton_Click(object sender, EventArgs e)
         {
             if (NameInputBox.Text == "" || networkStream == null)
@@ -239,6 +251,7 @@ namespace MultiClientChatApp
             }
         }
 
+        //Sends message 
         private async Task SendMessageAsync(string type, string name, string message)
         {
             string completedMessage = EncodeMessage(type, name, message);
@@ -250,6 +263,7 @@ namespace MultiClientChatApp
             MessageInput.Focus();
         }
 
+        //Encodes given message that is split in: type, name and message
         private string EncodeMessage(string type, string name, string message)
         {
             type = Regex.Replace(type, "[|]", "&#124");
@@ -263,6 +277,7 @@ namespace MultiClientChatApp
             return newMessage;
         }
 
+        //Parses a string to a int (for input fields)
         private int ParseStringToInt(string stringParam)
         {
             int number;
@@ -271,6 +286,7 @@ namespace MultiClientChatApp
             return number;
         }
 
+        //Checks if an ip is valid
         public bool CheckIpAddressValidation(string ipAdress)
         {
             string[] splitValues = ipAdress.Split('.');
@@ -283,6 +299,7 @@ namespace MultiClientChatApp
             return splitValues.All(r => byte.TryParse(r, out readyByte));
         }
 
+        //Checks all input boxes for unvalid input
         private bool checkInputForErrors(int portNumber, int bufferSize, string ip)
         {
             if (!CheckIpAddressValidation(ip))
@@ -306,7 +323,7 @@ namespace MultiClientChatApp
             }
         }
 
-
+        //Diconnect button event handler
         private async void DisconnectButton_click(object sender, EventArgs e)
         {
             try
@@ -327,6 +344,7 @@ namespace MultiClientChatApp
             }
         }
 
+        //Disconnects user
         private async Task DisconnectAsync(string username)
         {
             ConnectButton.Enabled = true;
@@ -336,6 +354,7 @@ namespace MultiClientChatApp
             await SendClientDisconnectAsync("INFO", username, "disconnectFromServer");
         }
 
+        //Everything related to receiving data in the client
         private async void ReceiveClientData(int bufferSize, string name)
         {
             string message = "";
@@ -346,41 +365,41 @@ namespace MultiClientChatApp
             try
             {
                 while (networkStream.CanRead)
-            {
-
-                StringBuilder fullMessage = new StringBuilder();
-
-                do
                 {
+
+                    StringBuilder fullMessage = new StringBuilder();
+
+                    do
+                    {
                         int readBytes = await networkStream.ReadAsync(buffer, 0, bufferSize);
                         message = Encoding.ASCII.GetString(buffer, 0, readBytes);
                         fullMessage.Append(message);
-                    
-                }
-                while (networkStream.DataAvailable);
 
-                string decodedType = ProtocolRegexCheck(fullMessage.ToString(), new Regex(@"(?<=\@)(.*?)(?=\|{2})"));
-                string decodedUsername = ProtocolRegexCheck(fullMessage.ToString(), new Regex(@"(?<=\|{2})(.*?)(?=\|{2})"));
-                string decodedMessage = DecodeMessage(ProtocolRegexCheck(ProtocolRegexCheck(fullMessage.ToString(), new Regex(@"\|(?:.(?!\|))+$")), new Regex(@"(?<=\|{2})(.*?)(?=\@)")));
+                    }
+                    while (networkStream.DataAvailable);
 
-                if (decodedType == "INFO" && decodedMessage == "disconnectFromServer")
-                {
-                    await SendClientDisconnectAsync("INFO", name, "disconnect");
-                    break;
+                    string decodedType = ProtocolRegexCheck(fullMessage.ToString(), new Regex(@"(?<=\@)(.*?)(?=\|{2})"));
+                    string decodedUsername = ProtocolRegexCheck(fullMessage.ToString(), new Regex(@"(?<=\|{2})(.*?)(?=\|{2})"));
+                    string decodedMessage = DecodeMessage(ProtocolRegexCheck(ProtocolRegexCheck(fullMessage.ToString(), new Regex(@"\|(?:.(?!\|))+$")), new Regex(@"(?<=\|{2})(.*?)(?=\@)")));
+
+                    if (decodedType == "INFO" && decodedMessage == "disconnectFromServer")
+                    {
+                        await SendClientDisconnectAsync("INFO", name, "disconnect");
+                        break;
+                    }
+                    else if (decodedType == "INFO" && decodedMessage == "disconnect")
+                    {
+                        break;
+                    }
+                    else if (decodedType == "MESSAGE")
+                    {
+                        AddMessage($"{decodedUsername}: {decodedMessage}");
+                    }
+                    if (message == "bye")
+                    {
+                        break;
+                    }
                 }
-                else if (decodedType == "INFO" && decodedMessage == "disconnect")
-                {
-                    break;
-                }
-                else if (decodedType == "MESSAGE")
-                {
-                    AddMessage($"{decodedUsername}: {decodedMessage}");
-                }
-                if (message == "bye")
-                {
-                    break;
-                }
-            }
             }
             catch (IOException)
             {
@@ -391,6 +410,7 @@ namespace MultiClientChatApp
             AddMessage($"Connection has been closed!");
         }
 
+        //Sends disconnect message to server
         private async Task SendServerDisconnectAsync(NetworkStream stream, string type, string username, string message)
         {
             string finalMessage = EncodeMessage(type, username, message);
@@ -398,6 +418,7 @@ namespace MultiClientChatApp
             await SendServerMessageOnNetworkAsync(stream, finalMessage);
         }
 
+        //Sends disconnect message to client
         private async Task SendClientDisconnectAsync(string type, string username, string message)
         {
             string finalMessage = EncodeMessage(type, username, message);
