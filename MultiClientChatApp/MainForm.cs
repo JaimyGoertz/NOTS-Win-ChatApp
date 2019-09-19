@@ -45,15 +45,15 @@ namespace MultiClientChatApp
             Chatscreen.Items.Add(message);
         }
 
-        private async Task CreateServerAsync()
+        private async Task CreateServerAsync(string port, string buffer, string ip)
         {
-            int portNumber = ParseStringToInt(PortInputBox.Text);
-            int bufferSize = ParseStringToInt(BufferInputBox.Text);
-            if (!checkInputForErrors(portNumber, bufferSize)) { return; }
+            int portNumber = ParseStringToInt(port);
+            int bufferSize = ParseStringToInt(buffer);
+            if (!checkInputForErrors(portNumber, bufferSize, ip)) { return; }
 
             try
             {
-                TcpListener tcpListener = new TcpListener(IPAddress.Parse(IpInputBox.Text), portNumber);
+                TcpListener tcpListener = new TcpListener(IPAddress.Parse(ip), portNumber);
                 tcpListener.Start();
                 MessageInput.Enabled = false;
                 SendMessageButton.Enabled = false;
@@ -82,7 +82,7 @@ namespace MultiClientChatApp
         {
             try
             {
-                await CreateServerAsync();
+                await CreateServerAsync(PortInputBox.Text,BufferInputBox.Text, IpInputBox.Text);
             }
             catch
             {
@@ -136,7 +136,7 @@ namespace MultiClientChatApp
                         message = Encoding.ASCII.GetString(buffer, 0, readBytes);
                         fullMessage.Append(message);
                     }
-                    catch (IOException ex)
+                    catch (IOException)
                     {
                         fullMessage.Clear();
                         fullMessage.Append("@INFO||unknown||disconnect@");
@@ -185,7 +185,7 @@ namespace MultiClientChatApp
         {
             try
             {
-                await CreateConnectionAsync();
+                await CreateConnectionAsync(PortInputBox.Text, BufferInputBox.Text, IpInputBox.Text, NameInputBox.Text);
             }
             catch
             {
@@ -193,17 +193,17 @@ namespace MultiClientChatApp
             }
         }
 
-        private async Task CreateConnectionAsync()
+        private async Task CreateConnectionAsync(string port, string buffer, string ip, string name)
         {
-            int portNumber = ParseStringToInt(PortInputBox.Text);
-            int bufferSize = ParseStringToInt(BufferInputBox.Text);
-            if (String.IsNullOrWhiteSpace(NameInputBox.Text))
+            int portNumber = ParseStringToInt(port);
+            int bufferSize = ParseStringToInt(buffer);
+            if (String.IsNullOrWhiteSpace(name))
             {
                 MessageBox.Show("No username has been given", "No username", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            if (!checkInputForErrors(portNumber, bufferSize)) { return; }
+            if (!checkInputForErrors(portNumber, bufferSize,ip)) { return; }
             AddMessage("Connecting");
             try
             {
@@ -213,8 +213,8 @@ namespace MultiClientChatApp
                 ConnectButton.Enabled = false;
                 DisconnectButton.Enabled = true;
                 tcpClient = new TcpClient();
-                await tcpClient.ConnectAsync(IpInputBox.Text, portNumber);
-                await Task.Run(() => ReceiveClientData(bufferSize));
+                await tcpClient.ConnectAsync(ip, portNumber);
+                await Task.Run(() => ReceiveClientData(bufferSize, NameInputBox.Text));
 
             }
             catch (SocketException)
@@ -283,9 +283,9 @@ namespace MultiClientChatApp
             return splitValues.All(r => byte.TryParse(r, out readyByte));
         }
 
-        private bool checkInputForErrors(int portNumber, int bufferSize)
+        private bool checkInputForErrors(int portNumber, int bufferSize, string ip)
         {
-            if (!CheckIpAddressValidation(IpInputBox.Text))
+            if (!CheckIpAddressValidation(ip))
             {
                 MessageBox.Show("Ip address is invalid, try again", "Invalid IP address", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
@@ -336,7 +336,7 @@ namespace MultiClientChatApp
             await SendClientDisconnectAsync("INFO", username, "disconnectFromServer");
         }
 
-        private async void ReceiveClientData(int bufferSize)
+        private async void ReceiveClientData(int bufferSize, string name)
         {
             string message = "";
             byte[] buffer = new byte[bufferSize];
@@ -365,7 +365,7 @@ namespace MultiClientChatApp
 
                 if (decodedType == "INFO" && decodedMessage == "disconnectFromServer")
                 {
-                    await SendClientDisconnectAsync("INFO", NameInputBox.Text, "disconnect");
+                    await SendClientDisconnectAsync("INFO", name, "disconnect");
                     break;
                 }
                 else if (decodedType == "INFO" && decodedMessage == "disconnect")
