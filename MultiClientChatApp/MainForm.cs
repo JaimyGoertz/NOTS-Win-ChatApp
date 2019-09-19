@@ -71,14 +71,13 @@ namespace MultiClientChatApp
             CreateServerButton.Enabled = false;
             DisconnectButton.Enabled = true;
             AddMessage($"Server is waiting for clients on port: {portNumber}");
-            do
+            while (started)
             {
                 TcpClient tcpClient = await tcpListener.AcceptTcpClientAsync();
                 SendMessageButton.Enabled = true;
                 clientList.Add(tcpClient);
                 await Task.Run(() => ReceiveServerData(tcpClient, bufferSize));
             }
-            while (started);
             ConnectButton.Enabled = true;
             CreateServerButton.Enabled = true;
             DisconnectButton.Enabled = false;
@@ -105,31 +104,30 @@ namespace MultiClientChatApp
         }
 
         //Broadcasts message to al clients in the clientlist
-        private async Task BroadcastMessageToClients(TcpClient client, string type, string username, string message)
+        private async Task BroadcastMessageToClients(TcpClient client, string type, string username, string msg)
         {
-            string fullMessage = EncodeMessage(type, username, message);
+
 
             foreach (TcpClient user in clientList)
             {
                 if (user.Client.RemoteEndPoint != client.Client.RemoteEndPoint)
                 {
-                    await SendServerMessageOnNetworkAsync(user.GetStream(), fullMessage);
+                    string message = EncodeMessage(type, username, msg);
+                    int bufferSize = ParseStringToInt(BufferInputBox.Text);
+                    do
+                    {
+                        if (bufferSize > message.Length)
+                        {
+                            bufferSize = message.Length;
+                        }
+
+                        string substring = message.Substring(0, bufferSize);
+                        message = message.Remove(0, bufferSize);
+                        byte[] buffer = Encoding.ASCII.GetBytes(substring);
+                        await user.GetStream().WriteAsync(buffer, 0, bufferSize);
+                    } while (message.Length > 0);
                 }
             }
-        }
-
-        //Sends message given on server over the network
-        private async Task SendServerMessageOnNetworkAsync(NetworkStream stream, string message)
-        {
-            byte[] buffer = Encoding.ASCII.GetBytes(message);
-            await stream.WriteAsync(buffer, 0, buffer.Length);
-        }
-
-        //Sends message given on client over the network
-        private async Task SendClientMessageOnNetworkAsync(string message)
-        {
-            byte[] buffer = Encoding.ASCII.GetBytes(message);
-            await networkStream.WriteAsync(buffer, 0, buffer.Length);
         }
 
         //Everything related to receiving data on the server
@@ -138,7 +136,6 @@ namespace MultiClientChatApp
             string message = "";
             byte[] buffer = new byte[bufferSize];
             NetworkStream network = client.GetStream();
-
             AddMessage("Connected!");
 
             while (network.CanRead)
@@ -156,7 +153,7 @@ namespace MultiClientChatApp
                             message = Encoding.ASCII.GetString(buffer, 0, readBytes);
                             fullMessage.Append(message);
                         }
-                        while (fullMessage.ToString().IndexOf("@") < 0);
+                        while (fullMessage.ToString().IndexOf("@", 1) < 0);
                     }
                     catch (IOException)
                     {
@@ -171,9 +168,9 @@ namespace MultiClientChatApp
                 string decodedUsername = ProtocolRegexCheck(fullMessage.ToString(), new Regex(@"(?<=\|{2})(.*?)(?=\|{2})"));
                 string decodedMessage = DecodeMessage(ProtocolRegexCheck(ProtocolRegexCheck(fullMessage.ToString(), new Regex(@"\|(?:.(?!\|))+$")), new Regex(@"(?<=\|{2})(.*?)(?=\@)")));
 
-                if (decodedType == "INFO" && decodedMessage == "disconnectFromServer")
+                if (decodedType == "INFO" && decodedMessage == "DISCONNECTING")
                 {
-                    await SendServerDisconnectMessageAsync(network, "INFO", decodedUsername, "DISCONNECT");
+                    await DisconnectAsync(network, "INFO", decodedUsername, "DISCONNECT");
                     break;
                 }
                 else if (decodedType == "INFO" && decodedMessage == "DISCONNECT")
@@ -216,7 +213,7 @@ namespace MultiClientChatApp
             }
             catch
             {
-                MessageBox.Show("An error has occured");
+                MessageBox.Show("An error has occurred.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
@@ -268,7 +265,7 @@ namespace MultiClientChatApp
         //Send message button event handler
         private async void SendMessageButton_Click(object sender, EventArgs e)
         {
-            if (String.IsNullOrWhiteSpace(MessageInput.Text)) { return; }
+            if (String.IsNullOrWhiteSpace(MessageInput.Text) || networkStream == null) { return; }
             try
             {
                 await SendMessageAsync("MESSAGE", NameInputBox.Text, MessageInput.Text);
@@ -280,11 +277,22 @@ namespace MultiClientChatApp
         }
 
         //Sends message 
-        private async Task SendMessageAsync(string type, string name, string message)
+        private async Task SendMessageAsync(string type, string name, string msg)
         {
-            string completedMessage = EncodeMessage(type, name, message);
-            byte[] buffer = Encoding.ASCII.GetBytes(completedMessage);
-            await networkStream.WriteAsync(buffer, 0, buffer.Length);
+            string message = EncodeMessage(type, name, msg);
+            int bufferSize = ParseStringToInt(BufferInputBox.Text);
+            do
+            {
+                if (bufferSize > message.Length)
+                {
+                    bufferSize = message.Length;
+                }
+                string substring = message.Substring(0, bufferSize);
+                message = message.Remove(0, bufferSize);
+                byte[] buffer = Encoding.ASCII.GetBytes(substring);
+                await networkStream.WriteAsync(buffer, 0, bufferSize);
+            }
+            while (message.Length > 0);
             AddMessage($"{name}: {message}");
             MessageInput.Clear();
             MessageInput.Focus();
@@ -339,7 +347,7 @@ namespace MultiClientChatApp
                 MessageBox.Show("Port number is not valid, try again", "Invalid Port number", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
-            else if (bufferSize <= 1)
+            else if (bufferSize <= 0)
             {
                 MessageBox.Show("Buffersize is not valid, try again", "Invalid buffer size", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
@@ -359,16 +367,16 @@ namespace MultiClientChatApp
                 {
                     AddMessage("Server is closing");
 
-                    foreach (TcpClient user in clientList)
+                    foreach (TcpClient user in clientList.ToList())
                     {
-                        await DisconnectAsync(user.GetStream(), "INFO", "Server", "DISCONNECT");
+                        await DisconnectAsync(user.GetStream(), "INFO", "Server", "DISCONNECTING");
                     }
 
                     started = false;
 
                     TcpClient tcpClient = new TcpClient();
-                    tcpClient.Connect("127.0.0.1", ParseStringToInt(PortInputBox.Text));
-                    await DisconnectAsync(tcpClient.GetStream(), "INFO", "DUMMY","disconnectFromServer");
+                    await tcpClient.ConnectAsync("127.0.0.1", ParseStringToInt(PortInputBox.Text));
+                    await DisconnectAsync(tcpClient.GetStream(), "INFO", "DUMMY", "DISCONNECTING");
                     tcpClient.Close();
                 }
                 else
@@ -391,19 +399,30 @@ namespace MultiClientChatApp
         }
 
         //Disconnects server
-        private async Task DisconnectAsync(NetworkStream stream, string type, string name, string message)
+        private async Task DisconnectAsync(NetworkStream stream, string type, string name, string msg)
         {
 
-            string completedMessage = EncodeMessage(type, name, message);
+            string message = EncodeMessage(type, name, msg);
+            int bufferSize = ParseStringToInt(BufferInputBox.Text);
+            do
+            {
+                if (bufferSize > message.Length)
+                {
+                    bufferSize = message.Length;
+                }
 
-            byte[] buffer = Encoding.ASCII.GetBytes(completedMessage);
-            await stream.WriteAsync(buffer, 0, buffer.Length);
+                string substring = message.Substring(0, bufferSize);
+                message = message.Remove(0, bufferSize);
+                byte[] buffer = Encoding.ASCII.GetBytes(substring);
+                await stream.WriteAsync(buffer, 0, bufferSize);
+            } while (message.Length > 0);
+
         }
 
         //Disconnects user
         private async Task DisconnectClientAsync(string username)
         {
-            await SendClientDisconnectMessageAsync("INFO", username, "disconnectFromServer");
+            await SendDisconnectAsync("INFO", username, "DISCONNECTING");
             ConnectButton.Enabled = true;
             DisconnectButton.Enabled = false;
             SendMessageButton.Enabled = false;
@@ -422,63 +441,65 @@ namespace MultiClientChatApp
             networkStream = tcpClient.GetStream();
 
             AddMessage("Connected!");
-            try
+            while (networkStream.CanRead)
             {
-                while (networkStream.CanRead)
+
+                StringBuilder fullMessage = new StringBuilder();
+
+                do
                 {
-
-                    StringBuilder fullMessage = new StringBuilder();
-
                     do
                     {
-                        do
-                        {
-                            int readBytes = await networkStream.ReadAsync(buffer, 0, bufferSize);
-                            message = Encoding.ASCII.GetString(buffer, 0, readBytes);
-                            fullMessage.Append(message);
-                        } while (fullMessage.ToString().IndexOf("@") < 0);
+                        int readBytes = await networkStream.ReadAsync(buffer, 0, bufferSize);
+                        message = Encoding.ASCII.GetString(buffer, 0, readBytes);
+                        fullMessage.Append(message);
+                    } while (fullMessage.ToString().IndexOf("@", 1) < 0);
 
-                    }
-                    while (networkStream.DataAvailable);
-
-                    string decodedType = ProtocolRegexCheck(fullMessage.ToString(), new Regex(@"(?<=\@)(.*?)(?=\|{2})"));
-                    string decodedUsername = ProtocolRegexCheck(fullMessage.ToString(), new Regex(@"(?<=\|{2})(.*?)(?=\|{2})"));
-                    string decodedMessage = DecodeMessage(ProtocolRegexCheck(ProtocolRegexCheck(fullMessage.ToString(), new Regex(@"\|(?:.(?!\|))+$")), new Regex(@"(?<=\|{2})(.*?)(?=\@)")));
-
-                    if (decodedType == "INFO" && decodedMessage == "DISCONNECT")
-                    {
-                        AddMessage($"{decodedUsername}: Disconnected!");
-                        break;
-                    }
-                    else if (decodedType == "MESSAGE")
-                    {
-                        AddMessage($"{decodedUsername}: {decodedMessage}");
-                    }
                 }
-            }
-            catch (IOException)
-            {
-                MessageBox.Show("Server is closed", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                while (networkStream.DataAvailable);
+
+                string decodedType = ProtocolRegexCheck(fullMessage.ToString(), new Regex(@"(?<=\@)(.*?)(?=\|{2})"));
+                string decodedUsername = ProtocolRegexCheck(fullMessage.ToString(), new Regex(@"(?<=\|{2})(.*?)(?=\|{2})"));
+                string decodedMessage = DecodeMessage(ProtocolRegexCheck(ProtocolRegexCheck(fullMessage.ToString(), new Regex(@"\|(?:.(?!\|))+$")), new Regex(@"(?<=\|{2})(.*?)(?=\@)")));
+
+                if (decodedType == "INFO" && decodedMessage == "DISCONNECTING")
+                {
+                    await DisconnectAsync(networkStream, "INFO", decodedUsername, "DISCONNECT");
+                    break;
+                }
+                if (decodedType == "INFO" && decodedMessage == "DISCONNECT")
+                {
+                    AddMessage($"{decodedUsername}: Disconnected!");
+                    break;
+                }
+                else if (decodedType == "MESSAGE")
+                {
+                    AddMessage($"{decodedUsername}: {decodedMessage}");
+                }
             }
             networkStream.Close();
             tcpClient.Close();
             AddMessage($"Connection has been closed!");
         }
 
-        //Sends disconnect message to server
-        private async Task SendServerDisconnectMessageAsync(NetworkStream stream, string type, string username, string message)
-        {
-            string endMessage = EncodeMessage(type, username, message);
-
-            await SendServerMessageOnNetworkAsync(stream, endMessage);
-        }
-
         //Sends disconnect message to client
-        private async Task SendClientDisconnectMessageAsync(string type, string username, string message)
+        private async Task SendDisconnectAsync(string type, string username, string msg)
         {
-            string endMessage = EncodeMessage(type, username, message);
+            string message = EncodeMessage(type, username, msg);
+            int bufferSize = ParseStringToInt(BufferInputBox.Text);
+            do
+            {
+                if (bufferSize > message.Length)
+                {
+                    bufferSize = message.Length;
+                }
 
-            await SendClientMessageOnNetworkAsync(endMessage);
+                string substring = message.Substring(0, bufferSize);
+                message = message.Remove(0, bufferSize);
+                byte[] buffer = Encoding.ASCII.GetBytes(substring);
+                await networkStream.WriteAsync(buffer, 0, bufferSize);
+            }
+            while (message.Length > 0);
         }
     }
 }
