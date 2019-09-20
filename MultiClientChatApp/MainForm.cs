@@ -277,9 +277,9 @@ namespace MultiClientChatApp
         }
 
         //Sends message 
-        private async Task SendMessageAsync(string type, string name, string msg)
+        private async Task SendMessageAsync(string type, string username, string msg)
         {
-            string message = EncodeMessage(type, name, msg);
+            string message = EncodeMessage(type, username, msg);
             int bufferSize = ParseStringToInt(BufferInputBox.Text);
             do
             {
@@ -287,13 +287,15 @@ namespace MultiClientChatApp
                 {
                     bufferSize = message.Length;
                 }
+
                 string substring = message.Substring(0, bufferSize);
                 message = message.Remove(0, bufferSize);
                 byte[] buffer = Encoding.ASCII.GetBytes(substring);
                 await networkStream.WriteAsync(buffer, 0, bufferSize);
             }
             while (message.Length > 0);
-            AddMessage($"{name}: {message}");
+
+            AddMessage($"{username}: {msg}");
             MessageInput.Clear();
             MessageInput.Focus();
         }
