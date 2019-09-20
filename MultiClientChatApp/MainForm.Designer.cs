@@ -139,6 +139,7 @@
             this.NameInputBox.Name = "NameInputBox";
             this.NameInputBox.Size = new System.Drawing.Size(188, 22);
             this.NameInputBox.TabIndex = 3;
+            this.NameInputBox.Text = "User1";
             // 
             // ConnectButton
             // 
