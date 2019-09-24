@@ -16,34 +16,52 @@ Een aantal van de belangrijkste van technieken van c# en .net worden in de ander
 
 ### Beschrijving van concept in eigen woorden
 
-Een generic is een klasse die het mogelijk maakt om klasse en methodes te definiëren met een placeholder. Generics zijn toegevoegd in versie 2.0 van de C# programmeertaal en de CLR (Common Language Runtime). CLR zorgt voor het uitvoeren van code in verschillende ondersteunde programmeertalen. Generics zorgen ervoor dat het mogelijk is om geen type aan te geven. Dit kan later door de clients code bepaald worden. De parameter die gebruikt wordt is: "T". Generics zorgt ervoor dat boxing overbodig wordt (boxing wordt in het volgende hoofdstuk uitgelegd). 
+Een generic is een klasse die het mogelijk maakt om klasse en methodes te definiëren met een placeholder. Generics zijn toegevoegd in versie 2.0 van de C# programmeertaal en de CLR (Common Language Runtime). CLR zorgt voor het uitvoeren van code in verschillende ondersteunde programmeertalen. Generics zorgen ervoor dat het mogelijk is om geen type aan te geven. Dit kan later door de clients code bepaald worden. De parameter die gebruikt wordt is: "T". Generics zorgt ervoor dat boxing overbodig wordt (boxing wordt in het volgende hoofdstuk uitgelegd). Doordat het type later pas gekozen hoeft te worden. Code kan dan makkelijk worden hergebruikt.
 
-Generics zijn herbruikbare en efficiënt in tegenstelling tot niet generieke alternatieven. Een voorbeeld van zo'n alternatief is ArrayList. In de meeste gevallen is het verstandig om ```List<T>``` te gebruiken in plaats van het zelf maken van een klasse.
+Generics zijn herbruikbare en efficiënt in tegenstelling tot niet generieke alternatieven. Een voorbeeld van zo'n alternatief is ArrayList. In de meeste gevallen is het verstandig om ```List<T>``` te gebruiken in plaats van het zelf maken van een klasse. Er zijn verschillende soorten generics. De soorten zijn: interfaces, klassen, methodes, events en delegates. Generics worden voornamelijk gebruikt bij het maken van collection classes. Dit zijn klassen die fungeren als lijst. Met een generic delegate kan een delegate verschillende waardes krijgen. Net zoals bij een normale generic. Hieronder staat een voorbeeld van zo'n delegate: 
+```csharp
+public delegate void Del<T>(T item);
+ ```
+(delegates komen in een later hoofdstuk aan bod).
 
-Er is een mogelijkheid om het aantal types dat gebruikt wordt te beperken. Dit kan met behulp van constraints. Een constraint wordt als volgende gebruikt:
+Er is een mogelijkheid om het aantal types dat gebruikt wordt te beperken. Dit kan met behulp van constraints. Constraints kunnen alleen klasses bevatten die erven van System.Object. Een constraint wordt als volgende gebruikt:
 ```csharp
 public class GenericList<T> where T : class
 {
 }
  ```
-Hierin kan class iedere klasse zijn.
+Hierin kan class iedere klasse zijn. Het is ook mogelijk om meerdere types te gebruiken in een constraint. Dit doe je door achter de class met komma's meerdere types op te sommen.
 
 ### Code voorbeeld
 
-Een generic wordt gedefinieerd door het gebruik van de punthaken (<>) en de parameter "T". Dit is hoe een generic klasse aangemaakt wordt:
+Een generic wordt gedefinieerd door het gebruik van de punthaken (<>) en de parameter "T". Dit is te zien bij punt 1. Het type van "T" wordt bepaald bij punt 2, 3 en 4. Er zijn verschillende types mogelijk. Bij 2 en 3 zijn het value types (int en string). Je kunt ook een klasse gebruiken als type. Dat gebeurt bij punt 4.
+
+Dit is hoe een generic generic klasse werkt:
  ```csharp
+ // 1
 public class GenericList<T>
 {
     public void Add(T input) { }
 }
- ```
-
-Het type van bovenstaande code (```<T>```) kan gedeclareerd worden door de volgende code aan te roepen:
-```csharp
-GenericList<int> list1 = new GenericList<int>();
+class TestGenericList
+{
+    private class ExampleClass { }
+    static void Main()
+    {
+        // 2
+        GenericList<int> list1 = new GenericList<int>();
         list1.Add(1);
+
+        // 3
+        GenericList<string> list2 = new GenericList<string>();
+        list2.Add("");
+
+        // 4
+        GenericList<ExampleClass> list3 = new GenericList<ExampleClass>();
+        list3.Add(new ExampleClass());
+    }
+}
  ```
-In deze code hierboven wordt als type een integer gebruikt. Je kunt hier ook andere types gebruiken zoals bijvoorbeeld een string of een eigen klasse.
 
 In de gehele klasse kan de ```<T>``` parameter gebruikt worden. Als je dit doet wordt de "T" verandert door het type dat gekozen is. Dit gebeurt ook in de volgende code:
 ```csharp
@@ -58,13 +76,16 @@ private T data;
  ```
 
 ### Alternatieven & adviezen
+Het tegenovergestelde van een generic is een non-generic. Dit is ook het meest voorkomende alternatief. Een voorbeeld van zo'n non-generic is de ArrayList. Een groot verschil met een generic is dat je in een ArrayList meerdere verschillende types kunt toevoegen. Arraylists worden niet vaak meer gebruikt, omdat deze veel performance kosten. Microsoft (maker c#) raad zelf aan om geen arraylists meer te gebruiken, maar om generics te gebruiken. Het is dus aan te raden om generics te gebruiken.
 
 ### Authentieke en gezaghebbende bronnen
 
 -	C# programming guide (windows docs): https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/
 -	Windows docs CLR: https://docs.microsoft.com/en-us/dotnet/standard/clr 
 - Windows docs constraints: https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters
-- 
+- Windows docs arraylists: https://docs.microsoft.com/en-us/dotnet/api/system.collections.arraylist?view=netframework-4.8
+- Windows docs generic delegates: https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/generic-delegates
+
 ---
 
 
@@ -106,15 +127,20 @@ Boxing en unboxing vraagt veel performance. Als performance een grote rol speelt
 ### Authentieke en gezaghebbende bronnen
 
 -	Microsoft docs: https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/types/boxing-and-unboxing
-- https://docs.microsoft.com/en-us/dotnet/framework/performance/performance-tips 
+- Microsoft docs performance: https://docs.microsoft.com/en-us/dotnet/framework/performance/performance-tips 
 
 ---
 
 ## Delegates & Invoke
+
 ### Beschrijving van concept in eigen woorden
+
 ### Code voorbeeld
+
 ### Alternatieven & adviezen
+
 ### Authentieke en gezaghebbende bronnen
+
 
 ---
 
