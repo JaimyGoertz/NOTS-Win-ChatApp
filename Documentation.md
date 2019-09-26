@@ -106,7 +106,7 @@ Een simpel voorbeeld van boxing is:
  ```csharp
 int variable = 123;
 object o = (object)variable;
-```
+ ```
 In dit voorbeeld wordt een int geboxt. De waarde van de variabele wordt hier opgeslagen in een object. Het is belangrijk dat de variabele geconverteerd wordt naar een object. Dit is het stukje: "(object)". Als je dit vergeet geeft dit een error. 
 
 Een simpel voorbeeld van unboxing is:
@@ -138,7 +138,7 @@ Een delegate is een type die een referentie naar een methode bevat. Hij heeft 1 
 
 De naam van een delegate hoeft niet overeen te komen met de methode die wordt aangewezen. De namen van de parameters hoeven ook niet overeen te komen. Als de types en hoeveelheden parameters maar overeen komen. Delegates zijn de basis van events in windows forms. Voor een windows forms applicatie zijn delegates dus vaak noodzakelijk.
 
-Een invoke voert een specifieke delegate uit op de thread 
+Een invoke voert een delegate uit op een specifieke thread in Windoes Forms. Een invoke kun op twee manieren implementeren (zie code voorbeeld). Een invoke retouneert altijd een object.
 
 ### Code voorbeeld
 Een simpel voorbeeld van een delegate is:
@@ -156,25 +156,64 @@ public int AddTwoNumbers(int variable1, int variable2)
 }
  ```
  Het belangrijkste is dat alle types overeen komen met die van de delegate.
-Een voorbeeld van een invoke is:
-```csharp
 
-```
+De twee manieren van het implementeren van een invoke zijn:
+```csharp
+Invoke(Delegate)
+ ```
+ en
+ ```csharp
+ ```Invoke(Delegate, Object[])```
+ ```
+ Er zit een subtiel verschil tussen beide implementaties. Het enige verschil is de lijst van objecten die meegenomen worden als parameter.
 
 
 ### Alternatieven & adviezen
-Delegates worden binnen C# vaak gebruikt. Het is ook een unieke functie van C#. Zoals eerder beschreven zijn delegates de basis van events in windows forms. Je zal ze dus vaak moeten gebruiken in windows forms. Je komt er bijna niet om heen. Ik zou dit ook niet proberen, omdat delegates mits gebruikt met goede reden prima zijn. Een interface zou een alternatief zijn. Als een klasse 1 implementatie nodig heeft van een methode kun je een interface gebruiken. Als het er meer moeten zijn is een delegate beter.
+Delegates worden binnen C# vaak gebruikt. Het is ook een unieke functie van C#. Zoals eerder beschreven zijn delegates de basis van events in windows forms. Je zal ze dus vaak moeten gebruiken in windows forms. Je komt er bijna niet om heen. Ik zou dit ook niet proberen, omdat delegates mits gebruikt met goede reden prima zijn. Een interface zou een alternatief zijn. Als een klasse 1 implementatie nodig heeft van een methode kun je een interface gebruiken. Als het er meer moeten zijn is een delegate beter. Voor invoke geld hetzelfde als bij de delegate. Er is geen reden om invoke te vermijden. Vooral in combinatie met de delegate kan een invoke zeker de juiste oplossing zijn.
 
 ### Authentieke en gezaghebbende bronnen
 - Windows docs over delegates: https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/delegates/
 - Windows docs over invoke: https://docs.microsoft.com/en-us/dotnet/api/system.windows.forms.control.invoke?view=netframework-4.8
-- Windows forms over delegates vs interfaces: https://docs.microsoft.com/nl-nl/previous-versions/visualstudio/visual-studio-2010/ms173173(v=vs.100)
-
+- Windows docs over delegates vs interfaces: https://docs.microsoft.com/nl-nl/previous-versions/visualstudio/visual-studio-2010/ms173173(v=vs.100)
+- Windows docs over het gebruik van delegates: https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/delegates/using-delegates
 
 ---
 
 ## Threading & Async
+
 ### Beschrijving van concept in eigen woorden
+Threading is het parallel uitvoeren van code. Deze threads zorgen ervoor dat er meerdere code tegelijk uitgevoerd kan worden. Een "normaal" programma werkt met één thread. Deze thread heet de primaire thread.  Je kunt naast deze standaard thread zelf nog meerdere threads openen. Deze heten: "worker threads". Met meerdere threads kun je code tegelijkertijd uitvoeren door iedere thread een ander stuk code te laten uitvoeren. Als er meerdere threads geopend zijn heet dit multithreading. Meerdere threads kunnen bijvoorbeeld de user interface optimaliseren door de website responsive te houden terwijl er op de achtergrond andere dingen gebeuren.  
+
+Threads werken aan de hand van scheduling priority. Dit betekent dat iedere thread een nummer krijgt gebaseerd op hoe belangrijk ze zijn. Een nummer wordt gebaseerd op de klasse waarin hij staat en de prioriteit. Threads worden ingeplanned op basis van belangrijkheid. Hierin is 0 het minst belangrijk en 31 het meest belangrijk.
+
+De tegenhanger van threading is async. Async zorgt er ook voor dat code tegelijk kan runnen. Een belangrijke functie van async is het responsive houden van een applicatie, want het zorgt ervoor dat de code niet vastloopt en niet op elkaar hoeft te wachten. Dit zorgt voor een betere ervaring voor de gebruiker. Dit komt, omdat alle UI gerelateerde zaken op één thread (de UI thread) uitgevoerd worden. 
+
+Een ander belangrijk aspect van asynchronous programming is de await operator. De await operator zorgt ervoor dat de code niet verder mag tot de regel waar het keyword klaar is met uitvoeren. Een ander belangrijk aspect van asynchronous programming zijn taks. Dit is het returntype van een methode die async is. Je kunt ook een void returnen, maar dit is alleen aan te raden bij event handlers.
+
 ### Code voorbeeld
+Een thread wordt op de volgende manier aangemaakt en uitgevoerd:
+```csharp
+var th = new Thread(new ThreadStart(FunctionThatExecutesOnThread()));
+ ```
+ De "new Thread" maakt een thread aan en de "new ThreadStart" zorgt ervoor dat de thread gestart word.
+
+ Een async methode ziet er als volgt uit:
+```csharp
+async Task<int> GetTaskOfTResultAsync()
+{
+    int hours = 0;
+    await Task.Delay(0);
+    return hours;
+}
+ ```
+ Let hierbij op het async keyword aan het begin van de methode en het Task returntype. In deze functie wordt een integere geretouneerd deze staat tussen de haakjes achter de task. Ook het await keyword valt op in deze code. Deze is in de beschrijving al beschreven. Een functie kan ook niks retouneren. Dan kun je de integer en de return weglaten.
+
 ### Alternatieven & adviezen
+In de nieuwe versies van c# en .NET gaat bij de meeste mensen de voorkeur uit naar async. Async is een simpele oplossing in tegenstelling tot oudere technieken. Het is relatief makkelijk om async en await te gebruiken in C#. Threading is vaak ingewikkelder. Threading is ook moeilijker te onderhouden en te debuggen. Het kost ook veel meer code om hetzelfde te bereiken. Async is veel moderner en makkelijker in gebruik. Daarom is het beter om asynchronous programming te gebruiken. 
+
 ### Authentieke en gezaghebbende bronnen
+- Windows docs over threading: https://docs.microsoft.com/en-us/dotnet/api/system.threading.thread?view=netframework-4.8
+- Windows docs over scheduling priority: https://docs.microsoft.com/en-us/windows/win32/procthread/scheduling-priorities
+- Windows forms over async programming: https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/async/task-asynchronous-programming-model
+- Windows forms over async en await: https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/async/
+
