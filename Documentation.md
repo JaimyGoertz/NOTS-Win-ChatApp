@@ -80,11 +80,11 @@ Het tegenovergestelde van een generic is een non-generic. Dit is ook het meest v
 
 ### Authentieke en gezaghebbende bronnen
 
--	C# programming guide (windows docs): https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/
--	Windows docs CLR: https://docs.microsoft.com/en-us/dotnet/standard/clr 
-- Windows docs constraints: https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters
-- Windows docs arraylists: https://docs.microsoft.com/en-us/dotnet/api/system.collections.arraylist?view=netframework-4.8
-- Windows docs generic delegates: https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/generic-delegates
+-	Windows docs over generics: https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/
+-	Windows docs over CLR: https://docs.microsoft.com/en-us/dotnet/standard/clr 
+- Windows docs over constraints: https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters
+- Windows docs over arraylists: https://docs.microsoft.com/en-us/dotnet/api/system.collections.arraylist?view=netframework-4.8
+- Windows docs over generic delegates: https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/generic-delegates
 
 ---
 
@@ -126,20 +126,49 @@ Boxing en unboxing vraagt veel performance. Als performance een grote rol speelt
 
 ### Authentieke en gezaghebbende bronnen
 
--	Microsoft docs: https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/types/boxing-and-unboxing
-- Microsoft docs performance: https://docs.microsoft.com/en-us/dotnet/framework/performance/performance-tips 
+-	Microsoft docs over boxing/unboxing: https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/types/boxing-and-unboxing
+- Microsoft docs over performance: https://docs.microsoft.com/en-us/dotnet/framework/performance/performance-tips 
 
 ---
 
 ## Delegates & Invoke
 
 ### Beschrijving van concept in eigen woorden
+Een delegate is een type die een referentie naar een methode bevat. Hij heeft 1 of meerdere parameters en een return type. Alle methodes met hetzelfde aantal parameters en return type kunnen verbonden worden aan een delegate. Je kunt deze methodes dan via de delegate aanroepen. Dit zit ook in de naam: "To delegate" betekent in het Nederlands delegeren. Dit is ook wat een delegate doet. Hij geeft een aanroep door aan de juiste methode die op deze delegate lijkt. Methodes waar delegates naar verwijzen kunnen static of een instance method (methode zonder het static keyword) zijn. Dit maakt het makkelijk om de aanroep van een methode te veranderen of om nieuwe code toe te voegen aan bestaande klassen. Een andere belangrijke functie van delegates is het doorgeven van methodes als parameters.  
+
+De naam van een delegate hoeft niet overeen te komen met de methode die wordt aangewezen. De namen van de parameters hoeven ook niet overeen te komen. Als de types en hoeveelheden parameters maar overeen komen. Delegates zijn de basis van events in windows forms. Voor een windows forms applicatie zijn delegates dus vaak noodzakelijk.
+
+Een invoke voert een specifieke delegate uit op de thread 
 
 ### Code voorbeeld
+Een simpel voorbeeld van een delegate is:
+```csharp
+public delegate int DoSomethingImportant(int x, int y);
+ ```
+
+Een functie die aangeroepen zou kunnen worden met behulp van bovenstaande delegate is:
+```csharp
+public int AddTwoNumbers(int variable1, int variable2)
+{
+    int count = variable1 + variable2;
+    Console.WriteLine(count);
+    return count
+}
+ ```
+ Het belangrijkste is dat alle types overeen komen met die van de delegate.
+Een voorbeeld van een invoke is:
+```csharp
+
+```
+
 
 ### Alternatieven & adviezen
+Delegates worden binnen C# vaak gebruikt. Het is ook een unieke functie van C#. Zoals eerder beschreven zijn delegates de basis van events in windows forms. Je zal ze dus vaak moeten gebruiken in windows forms. Je komt er bijna niet om heen. Ik zou dit ook niet proberen, omdat delegates mits gebruikt met goede reden prima zijn. Een interface zou een alternatief zijn. Als een klasse 1 implementatie nodig heeft van een methode kun je een interface gebruiken. Als het er meer moeten zijn is een delegate beter.
 
 ### Authentieke en gezaghebbende bronnen
+- Windows docs over delegates: https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/delegates/
+- Windows docs over invoke: https://docs.microsoft.com/en-us/dotnet/api/system.windows.forms.control.invoke?view=netframework-4.8
+- Windows forms over delegates vs interfaces: https://docs.microsoft.com/nl-nl/previous-versions/visualstudio/visual-studio-2010/ms173173(v=vs.100)
 
 
 ---
