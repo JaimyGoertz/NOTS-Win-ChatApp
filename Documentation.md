@@ -7,8 +7,8 @@ Studentnummer: 597339
 
 De chat app is een applicatie waarbij meerdere gebruikers berichten met elkaar kunnen uitwisselen. Dit doen ze door een aantal gegevens in te vullen om een connectie te maken met een server. Als de juiste gegevens zijn ingevuld kan de gebruiker (client) chatten met andere gebruikers die dezelfde gegevens hebben ingevuld. De benodigde gegevens zijn: poort, ip adres en buffergrootte. Alle clients praten via de server met elkaar. De gehele applicatie is voorzien van error handling. Hierdoor worden alle verkeerde user input en andere fouten goed afgehandeld. 
 
-Voor dit project wordt windows forms gebruikt. De connecties worden gedaan op basis van het tcp protocol. Windows forms is de basis van de applicatie. De gebruikte programmeertaal van windows forms is C#. Ook wordt het .NET framework gebruikt.
-Een aantal van de belangrijkste van technieken van c# en .net worden in de andere hoofdstukken van dit verslag behandelt.
+Voor dit project wordt Windows Forms gebruikt. De connecties worden gedaan op basis van het tcp protocol. Windows Forms is de basis van de applicatie. De gebruikte programmeertaal van Windows Forms is C#. Ook wordt het .NET framework gebruikt.
+Een aantal van de belangrijkste van technieken van C# en .NET worden in de andere hoofdstukken van dit verslag behandelt.
 
 ---
 
@@ -16,7 +16,7 @@ Een aantal van de belangrijkste van technieken van c# en .net worden in de ander
 
 ### Beschrijving van concept in eigen woorden
 
-Een generic is een klasse die het mogelijk maakt om klasse en methodes te definiëren met een placeholder. Generics zijn toegevoegd in versie 2.0 van de C# programmeertaal en de CLR (Common Language Runtime). CLR zorgt voor het uitvoeren van code in verschillende ondersteunde programmeertalen. Generics zorgen ervoor dat het mogelijk is om geen type aan te geven. Dit kan later door de clients code bepaald worden. De parameter die gebruikt wordt is: "T". Generics zorgt ervoor dat boxing overbodig wordt (boxing wordt in het volgende hoofdstuk uitgelegd). Doordat het type later pas gekozen hoeft te worden. Code kan dan makkelijk worden hergebruikt.
+Een generic is een klasse die het mogelijk maakt om klassen en methodes te definiëren met een placeholder. Generics zijn toegevoegd in versie 2.0 van de C# programmeertaal en de CLR (Common Language Runtime). CLR zorgt voor het uitvoeren van code in verschillende ondersteunde programmeertalen. Generics zorgen ervoor dat het mogelijk is om geen type aan te geven. Dit kan later door de clients code bepaald worden. De parameter die gebruikt wordt is: "T". Generics zorgt ervoor dat boxing overbodig wordt (boxing wordt in het volgende hoofdstuk uitgelegd). Doordat het type later pas gekozen hoeft te worden. Code kan dan makkelijk worden hergebruikt.
 
 Generics zijn herbruikbare en efficiënt in tegenstelling tot niet generieke alternatieven. Een voorbeeld van zo'n alternatief is ArrayList. In de meeste gevallen is het verstandig om ```List<T>``` te gebruiken in plaats van het zelf maken van een klasse. Er zijn verschillende soorten generics. De soorten zijn: interfaces, klassen, methodes, events en delegates. Generics worden voornamelijk gebruikt bij het maken van collection classes. Dit zijn klassen die fungeren als lijst. Met een generic delegate kan een delegate verschillende waardes krijgen. Net zoals bij een normale generic. Hieronder staat een voorbeeld van zo'n delegate: 
 ```csharp
@@ -26,15 +26,13 @@ public delegate void Del<T>(T item);
 
 Er is een mogelijkheid om het aantal types dat gebruikt wordt te beperken. Dit kan met behulp van constraints. Constraints kunnen alleen klasses bevatten die erven van System.Object. Een constraint wordt als volgende gebruikt:
 ```csharp
-public class GenericList<T> where T : class
-{
-}
+public class GenericList<T> where T : class {}
  ```
 Hierin kan class iedere klasse zijn. Het is ook mogelijk om meerdere types te gebruiken in een constraint. Dit doe je door achter de class met komma's meerdere types op te sommen.
 
 ### Code voorbeeld
 
-Een generic wordt gedefinieerd door het gebruik van de punthaken (<>) en de parameter "T". Dit is te zien bij punt 1. Het type van "T" wordt bepaald bij punt 2, 3 en 4. Er zijn verschillende types mogelijk. Bij 2 en 3 zijn het value types (int en string). Je kunt ook een klasse gebruiken als type. Dat gebeurt bij punt 4.
+Een generic wordt gedefinieerd door het gebruik van de punthaken (<>) en de parameter "T".  Dit is te zien bij punt 1 in onderstaande code. Het type van "T" wordt bepaald bij punt 2, 3 en 4. Er zijn verschillende types mogelijk. Bij 2 en 3 zijn het value types (int en string). Je kunt ook een klasse gebruiken als type. Dat gebeurt bij punt 4.
 
 Dit is hoe een generic generic klasse werkt:
  ```csharp
@@ -76,7 +74,7 @@ private T data;
  ```
 
 ### Alternatieven & adviezen
-Het tegenovergestelde van een generic is een non-generic. Dit is ook het meest voorkomende alternatief. Een voorbeeld van zo'n non-generic is de ArrayList. Een groot verschil met een generic is dat je in een ArrayList meerdere verschillende types kunt toevoegen. Arraylists worden niet vaak meer gebruikt, omdat deze veel performance kosten. Microsoft (maker c#) raad zelf aan om geen arraylists meer te gebruiken, maar om generics te gebruiken. Het is dus aan te raden om generics te gebruiken.
+Het tegenovergestelde van een generic is een non-generic. Dit is ook het meest voorkomende alternatief. Een voorbeeld van zo'n non-generic is de ArrayList. Een groot verschil met een generic is dat je in een ArrayList meerdere verschillende types kunt toevoegen. Arraylists worden niet vaak meer gebruikt, omdat deze veel performance kosten. Microsoft (maker C#) raad zelf aan om geen arraylists meer te gebruiken, maar om generics te gebruiken. Het is dus aan te raden om generics te gebruiken.
 
 ### Authentieke en gezaghebbende bronnen
 
@@ -107,7 +105,7 @@ Een simpel voorbeeld van boxing is:
 int variable = 123;
 object o = (object)variable;
  ```
-In dit voorbeeld wordt een int geboxt. De waarde van de variabele wordt hier opgeslagen in een object. Het is belangrijk dat de variabele geconverteerd wordt naar een object. Dit is het stukje: "(object)". Als je dit vergeet geeft dit een error. 
+In dit voorbeeld wordt een integer geboxt. De waarde van de variabele wordt hier opgeslagen in een object. Het is belangrijk dat de variabele geconverteerd wordt naar een object. Dit is het stukje: "(object)". Als je dit vergeet geeft dit een error. 
 
 Een simpel voorbeeld van unboxing is:
 
